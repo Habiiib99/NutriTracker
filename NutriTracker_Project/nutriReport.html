@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nutri Report</title>
+    <!--Linker vores Font fil og CSS-->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="error-container"></div> <!-- Container for fejlbeskeder -->
+
+    <!-- Navigationsbar indsættes for hver HTML fil-->
+    <!--Nav-elementet repræsenterer en sektion af en side, der linker til andre dele på siden.-->
+    <nav class="navbar">
+        <img src="Billede2.png" alt="NutriTracker Logo" class="navbar-logo"> <!--Link til logo-->
+        <a href="dashboard.html">Dashboard</a>
+        <a href="mealcreator.html">Meal Creator</a>
+        <a href="mealtracker.html">Meal Tracker</a>
+        <a href="nutriReport.html" class="active">Nutri Report</a>
+        <a href="food-inspector.html">Food Inspector</a>
+     </nav>
+
+     <div class="nutri-report-container">
+        <h1>Nutri Report</h1> <!--Overskift-->
+        <table>
+            <thead>
+                <tr> <!--Tabel med diverse oplysninnger i rækker-->
+                    <th>Dato</th>
+                    <th>Måltider</th>
+                    <th>Vand</th>
+                    <th>Kcal</th>
+                    <th>Protein</th>
+                    <th>Fat</th>
+                    <th>Fiber</th>
+                </tr>
+            </thead>
+            <tbody class="report-entries">
+                <!-- Rapportindlæg vil blive genereret og indsat her af JavaScript -->
+            </tbody>
+        </table>
+        <div class="loading-indicator" hidden>Loading...</div>
+    </div>
+    
+    <!-- Link til JavaScript-filerne-->
+    <script src="api.js"></script>
+    <script src="nutriReport.js"></script>
+</body>
+</html>

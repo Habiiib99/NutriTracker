@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meal Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="error-container"></div>
+
+    <!-- Navigationsbar med links til forskellige sider og logo -->
+    <nav class="navbar">
+        <img src="Billede2.png" alt="NutriTracker Logo" class="navbar-logo">
+        <!-- Hver <a> tag repræsenterer et link til en anden side -->
+        <a href="dashboard.html">Dashboard</a>
+        <a href="mealcreator.html">Meal Creator</a>
+        <a href="mealtracker.html" class="active">Meal Tracker</a>
+        <a href="nutriReport.html">Nutri Report</a>
+        <a href="food-inspector.html">Food Inspector</a>
+    </nav>
+
+    <div class="meal-tracker-container">
+        <h1>Meal Tracker</h1> <!--Overskift-->
+        <form id="meal-registration-form">
+            <select id="meal-select-dropdown">
+                <!-- Dynamisk genererede måltidsoptioner vil blive indsat her -->
+            </select>
+            
+            <input type="text" id="meal-weight" placeholder="Total vægt(g) Registreres" readonly> <!-- Gør dette felt skrivebeskyttet -->
+            <input type="text" id="meal-kcal" placeholder="Kalorier (kcal)" readonly> <!-- Nyt felt for kalorier -->
+        
+            <input type="datetime-local" id="meal-time" required>
+            <button type="submit">Registrér måltid</button>
+        </form>
+        
+        <!-- Tilføj en formular eller felt for at registrere væskeindtag -->
+        <form id="water-intake-form">
+            <input type="number" id="water-intake" placeholder="Vandindtag (ml)" required>
+            <input type="datetime-local" id="water-intake-time" required>
+            <button type="submit">Registrér væske</button>
+        </form>
+        
+        <div id="registered-meals">
+            <!-- Måltidsregistreringer indlæses dynamisk her -->
+        </div>
+
+        <!-- Container for vandregistreringer -->
+         <div id="water-log-container">
+        <!-- Vandregistreringer vil blive indlæst her -->
+         </div>
+
+     
+
+    <!-- Link til JavaScript-filerne-->
+    <script src="api.js"></script>
+    <script src="mealtracker.js"></script>
+</body>
+</html>

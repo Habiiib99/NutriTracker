@@ -1,0 +1,398 @@
+/* Generelle Styles */
+body, html {
+    font-family: 'Nunito', sans-serif;
+    background-color: #DEF6D8; /* Baggrundsfarve */
+    color: #424242; /* Tekstfarve */
+    margin: 0;
+    line-height: 1.6;
+}
+
+/* Navigationsbar Styles */
+.navbar {
+    background-color: #91C789; /* Primær grøn farve */
+    padding: 10px 0; /* Reducer padding for at matche eksemplet */
+    text-align: center;
+    display: flex; /* Gør navigationsbaren til en flex container */
+    justify-content: center; /* Centrerer links i navigationsbaren */
+    align-items: center; /* Centrerer elementer vertikalt */
+    position: relative; /* Positioneret relativt for at placere logoet absolut inden for navigationsbaren */
+}
+
+.navbar a {
+    color: #F5F5F5;
+    text-decoration: none;
+    margin: 0 15px;
+    font-weight: bold;
+    padding: 10px 20px;
+    border-radius: 10px; /* Afrundede hjørner */
+}
+
+.navbar a:hover, .navbar a.active {
+    background-color: #F29A8A; /*farve for at vise hvilken side man er inde på i navigationsbaren*/
+}
+
+/* Logo Style */
+.navbar-logo {
+    position: absolute; /* Absolut positionering inden i navigationsbaren */
+    left: 20px; /* Placering fra venstre side */
+    top: 50%; /* Start fra toppen halvvejs ned */
+    transform: translateY(-50%); /* Skub op med halvdelen af logoets højde for at centrere vertikalt */
+    height: 40px; /* Højde på logoet */
+}
+
+
+/* Dashboard Container Styles */
+#dashboard-container {
+    max-width: 1200px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: #F5F5F5;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: grid;
+    gap: 20px; /* Afstand fra header*/
+}
+
+.dashboard-header {
+    text-align: left; 
+}
+
+/* Dashboard Stats Container Styles */
+#dashboard-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Opretter et responsivt antal kolonner */
+    gap: 20px; /*Afstand mellem dem*/
+    justify-content: center; /* Center grid items horizontally if they don't fill the entire row */
+}
+
+
+/* Stat Block Styles */
+.stat {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Centrer vertikalt */
+    align-items: center; /* Centrer  horisontalt */
+    text-align: center;
+    background: #F5F5F5;
+    border: solid;
+    border-radius: 10px;
+    border-width: 5px;
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+    height: 100px; /* Fixed height for each stat block */
+}
+
+/* Specific styles for ikonerne and teksten */
+.stat-icon {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.stat-text {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* Farve for hver blok */
+#meals-today-stat { border-color: #91c789; }
+#energy-today-stat { border-color: #F29A8A; }
+#water-today-stat { border-color: #99D9DE; }
+#protein-today-stat { border-color: #FFAB40; }
+
+
+
+
+
+/* Meal Creator Styles */
+.meal-creator-container {
+    max-width: 1200px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: #F5F5F5;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+  }
+  
+  /*Style for når der oprettes et måltid*/
+  .meal-form {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  
+  .meal-form input[type="text"] {
+    flex-grow: 1;
+    margin-right: 10px;
+  }
+  
+  .create-meal-btn {
+    padding: 10px 20px;
+    background-color: #FFAB40;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  .add-ingredient-btn {
+    padding: 10px 20px;
+    background-color: #569BD5;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .created-meals-list {
+    margin-top: 20px;
+  }
+  
+  /* Yderligere styles for created meals list */
+  .created-meals-list .meal-entry {
+    background: #f9f9f9;
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+
+
+
+/* Meal Tracker Container Styles */
+.meal-tracker-container {
+    max-width: 1200px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: #F5F5F5;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Meal Registration Form Styles */
+#meal-registration-form {
+    display: grid;
+    grid-template-columns: 1fr auto auto; /* Tilpass dette efter dine inputs */
+    gap: 20px;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+#meal-registration-form input[type="text"],
+#meal-registration-form input[type="number"],
+#meal-registration-form input[type="datetime-local"] {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #9e9e9e;
+}
+
+#meal-registration-form button {
+    padding: 10px 20px;
+    background-color: #FFAB40;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#water-intake-form button {
+  padding: 10px 20px;
+  background-color: #569bd5;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+/* Registered Meals List Styles */
+#registered-meals .meal-entry {
+    display: flex;
+    justify-content: space-between;
+    background: #f9f9f9;
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 5px;
+}
+/* Meal Entry Styles */
+.meal-entry {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: #f2f2f2;
+    border-radius: 5px;
+    margin-bottom: 10px; /* Tilføjer afstand mellem hver meal entry */
+  }
+  
+  .meal-details {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .meal-name, .meal-weight, .meal-time {
+    padding: 5px 10px;
+    background-color: #e9ecef;
+    border-radius: 5px;
+  }
+  
+  .meal-actions button {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  /* Style for gemme måltid knap */
+.save-meal-changes {
+  padding: 10px 20px;
+  background-color: #91c789;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+  
+  .delete-meal-btn {
+    padding: 10px 20px;
+    color: white;
+    background-color: #F29A8A; /* Rød for sletning */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  /* Style for at gemme vandindtagegelse knap */
+.save-water-changes {
+  padding: 5px 10px;
+  background-color: #91c789;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.delete-water-btn {
+  padding: 5px 10px;
+    color: white;
+    background-color: #F29A8A; /* Rød for sletning */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+  
+
+
+
+
+
+
+
+
+  /* Nutri Report Container Styles */
+.nutri-report-container {
+    max-width: 1200px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: #F5F5F5;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .report-entries {
+    margin-top: 20px;
+  }
+  
+  .report-entry {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: #f2f2f2;
+    border-radius: 5px;
+  }
+  
+  .report-entry > div {
+    padding: 5px 10px;
+    text-align: center;
+    /* Du kan tilføje specifikke farver og stilarter for hver type data */
+  }
+  
+
+
+
+
+
+
+
+  /* Container for hele Food Inspector siden */
+.food-inspector-container {
+  max-width: 1200px;
+  margin: 50px auto; /* Centrerer containeren */
+  padding: 20px; /* Indre afstand */
+  background-color: #f5f5f5; /* Hvid baggrund */
+  border-radius: 10px; /* Afrundede hjørner */
+  box-shadow: 0px 0px 10px rgba(0,0,0,0.1); /* Skyggeeffekt */
+}
+
+/* Container for søgefelt og søgeknap */
+.search-container {
+  margin-bottom: 20px; /* Afstand til elementer nedenfor */
+}
+
+/* Stil for søgefelt */
+#food-search {
+  width: 100%; /* Fylder den tilgængelige bredde */
+  padding: 10px; /* Indre afstand */
+  margin-right: 10px; /* Afstand til næste element */
+  border: 1px solid #E0E0E0; /* Grå kant */
+  border-radius: 5px; /* Afrundede hjørner */
+}
+
+/* Stil for søgeknap */
+#search-button {
+  padding: 10px 20px; /* Indre afstand */
+  background-color: #91C789; /* Grøn baggrund */
+  color: white; /* Hvid tekst */
+  border: none; /* Ingen kant */
+  border-radius: 5px; /* Afrundede hjørner */
+  cursor: pointer; /* Cursor ændres til pointer */
+}
+
+/* Stil for container, der viser fødevaredetaljer */
+#food-details {
+  display: grid; /* Bruger CSS Grid til layout */
+  grid-template-columns: 1fr 1fr; /* To kolonner med lige bredde */
+  gap: 20px; /* Afstand mellem kolonner */
+  padding: 20px; /* Indre afstand */
+  background-color: #f5f5f5; /* Lys grå baggrund */
+  border-radius: 5px; /* Afrundede hjørner */
+}
+
+/* Stil for tabel */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px; /* Afstand til elementet ovenfor */
+}
+
+th, td {
+  text-align: left;
+  padding: 8px;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+th {
+  background-color: #91C789;
+  color: white;
+}
+
+/* Tilføjelse af hover-effekt til tabellinjer */
+tbody tr:hover {
+  background-color: #f5f5f5;
+}
+

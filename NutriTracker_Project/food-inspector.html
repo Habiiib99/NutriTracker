@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <!-- Grundlæggende sideopsætning med tegnsæt og viewport for responsiv design -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Inspector</title>
+    <!-- Link til Google Fonts og det eksterne CSS stylesheet -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css"> <!-- Du kan tilføje et link til din egen CSS-fil her, hvis nødvendigt -->
+</head>
+<body>
+    <!-- Navigationsbar med links til forskellige sider og logo -->
+    <nav class="navbar">
+        <img src="Billede2.png" alt="NutriTracker Logo" class="navbar-logo">
+        <!-- Hver <a> tag repræsenterer et link til en anden side -->
+        <a href="dashboard.html">Dashboard</a>
+        <a href="mealcreator.html">Meal Creator</a>
+        <a href="mealtracker.html">Meal Tracker</a>
+        <a href="nutriReport.html">Nutri Report</a>
+        <a href="food-inspector.html" class="active">Food Inspector</a>
+    </nav>
+
+    <!-- Hovedindholdscontainer med titel og søgefelt -->
+    <main class="food-inspector-container">
+        <h1>Food Inspector</h1> <!--Overskift-->
+        <form id="search-form" class="search-container"> <!--Søgefelt-->
+            <input type="text" id="food-search" placeholder="Enter food item...">
+            <button type="submit" id="search-button">Search</button>
+        </form>
+        <div id="loading-indicator" style="display: none;">Loading...</div> <!-- Her tilføjes loading-indikatoren -->
+        <div id="food-details">
+            <!-- Tabelstrukturen for at vise resultater -->
+            <table>
+                <thead>
+                    <tr>
+                        <th>Food ID</th>
+                        <th>Food Name</th>
+                        <th>Energy (kcal/100g)</th>
+                        <th>Protein (g/100g)</th>
+                        <th>Fat (g/100g)</th>
+                        <th>Fiber (g/100g)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td id="ID"></td>
+                        <td id="foodName"></td>
+                        <td id="kcal"></td>
+                        <td id="protein"></td>
+                        <td id="fedt"></td>
+                        <td id="fiber"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- Link til JavaScript-filerne-->
+   <script src="api.js"></script>
+   <script src="food-inspector.js"></script>
+</body>
+</html>
