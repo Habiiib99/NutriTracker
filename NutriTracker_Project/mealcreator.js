@@ -1,4 +1,7 @@
 // MEAL CREATOR
+
+import { getMeals } from "./nutriBackend.js";
+
 // Definér konstante API-nøgler
 const apiKey = '169972';
 const ProteinKey = 1110; // SortKey for protein
@@ -51,6 +54,8 @@ class Meal {
         return total;
     }
 }
+
+
 
 // Funktion til at hente fødevare
 async function fetchFoodItem(ingredientName) {
@@ -152,12 +157,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const addIngredientBtn = document.getElementById('add-ingredient-btn');
     const ingredientsTableBody = document.getElementById('ingredientsTable').getElementsByTagName('tbody')[0];
     const mealNameInput = document.getElementById('meal-name');
-   
 
     // Når der klikkes på "tilføj ingrediens" knappen
     addIngredientBtn.addEventListener('click', async () => {
         const ingredientNameInput = document.getElementById('ingredient-name').value.trim();
         const ingredientQuantityInput = parseFloat(document.getElementById('ingredient-quantity').value.trim());
+
+
+        const meals = await getMeals()
+        console.log(meals)
 
         if (ingredientNameInput && ingredientQuantityInput && ingredientQuantityInput > 0) {
             const foodItem = await fetchFoodItem(ingredientNameInput);
@@ -178,6 +186,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Når der klikkes på "opret måltid" knappen
     mealForm.addEventListener('submit', (event) => {
         event.preventDefault();
+
         const mealName = mealNameInput.value.trim();
         if (mealName && currentMeal.ingredients.length > 0) {
             currentMeal.name = mealName;

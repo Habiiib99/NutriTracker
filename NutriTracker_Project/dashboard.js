@@ -1,3 +1,5 @@
+
+
 // Hjælpefunktion til at hente data fra localStorage
 function getData(key) {
     return JSON.parse(localStorage.getItem(key)) || [];
@@ -16,7 +18,6 @@ function updateDashboardValue(id, value) {
         element.textContent = value;
     }
 }
-
 
 // Hovedfunktion til at opdatere dashboardet
 function updateDashboard() {
