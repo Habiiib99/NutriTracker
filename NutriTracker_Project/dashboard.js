@@ -17,6 +17,7 @@ function updateDashboardValue(id, value) {
     }
 }
 
+//test
 
 // Hovedfunktion til at opdatere dashboardet
 function updateDashboard() {
