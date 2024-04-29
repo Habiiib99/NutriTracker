@@ -155,59 +155,94 @@ app.post('/api/users', async (req, res) => {
   }
 });
 
-app.delete('/api/users/:userId', async (req, res) => {
-  const userId = req.params.userId;
-  const query = 'DELETE FROM profiles WHERE id = ?';
-  try {
-    const result = await db.query(query, [userId]);
-    if (result.affectedRows) {
-      res.json({ message: 'Bruger slettet' });
-    } else {
-      res.status(404).json({ message: 'Bruger ikke fundet' });
+
+
+// Antag at dbConfig er din database konfiguration som vist tidligere
+sql.connect(dbConfig).then(pool => {
+  // Nu kan du bruge pool i resten af din applikation
+  app.delete('/api/users/:userId', async (req, res) => {
+    const userId = req.params.userId;
+
+    try {
+      const result = await pool.request()
+        .input('userId', sql.Int, userId)
+        .query('DELETE FROM profiles WHERE id = @userId');
+
+      if (result.rowsAffected[0] > 0) {
+        res.json({ message: 'Bruger slettet' });
+      } else {
+        res.status(404).json({ message: 'Bruger ikke fundet' });
+      }
+    } catch (error) {
+      res.status(500).json({ message: 'Server fejl', error: error.message });
     }
-  } catch (error) {
-    res.status(500).json({ message: 'Server fejl', error: error.message });
-  }
+  });
+
+}).catch(err => {
+  console.error('Fejl ved forbindelse til databasen:', err);
 });
+
+
+
 app.put('/api/users/:userId', async (req, res) => {
   const { name, age, gender, weight } = req.body;
   const userId = req.params.userId;
-  const query = 'UPDATE profiles SET name = ?, age = ?, gender = ?, weight = ? WHERE id = ?';
+
   try {
-    const result = await db.query(query, [name, age, gender, weight, userId]);
-    if (result.affectedRows) {
+    const pool = await sql.connect(dbConfig); // sikre at forbindelsen er aktiv
+
+    const result = await pool.request()
+      .input('userId', sql.Int, userId)
+      .input('name', sql.VarChar, name)
+      .input('age', sql.Int, age)
+      .input('gender', sql.VarChar, gender)
+      .input('weight', sql.Decimal(5, 2), weight)
+      .query('UPDATE profiles SET name = @name, age = @age, gender = @gender, weight = @weight WHERE id = @userId');
+
+    if (result.rowsAffected[0] > 0) {
       res.json({ message: 'Bruger opdateret', id: userId, name, age, gender, weight });
     } else {
       res.status(404).json({ message: 'Bruger ikke fundet' });
     }
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: 'Server fejl', error: error.message });
   }
 });
 
+
 // Logik for at logge en bruger ind
 import jwt from 'jsonwebtoken';
+
 app.post('/api/auth/login', async (req, res) => {
   const { email, password } = req.body;
-  // Først, find brugeren i databasen
-  const query = 'SELECT id, password FROM profiles WHERE email = ?';
+
   try {
-    const results = await db.query(query, [email]);
-    if (results.length === 0) {
+    // Simulerer en brugersøgning i databasen
+    const user = await db.query('SELECT id, password FROM profiles WHERE email = ?', [email]);
+    if (user.length === 0) {
       return res.status(401).json({ message: 'Ugyldig email eller adgangskode' });
     }
-    const user = results[0];
+
     // Sammenlign det indtastede password med det hashede password i databasen
-    const match = await bcrypt.compare(password, user.password);
-    if (!match) {
-      return res.status(401).json({ message: 'Ugyldig email eller adgangskode' });
-    }
+    const isMatch = await bcrypt.compare(password, user[0].password);
+
     // Hvis passwords matcher, generer en JWT
-    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    // Send token tilbage til brugeren
-    res.json({ token });
+    if (isMatch) {
+      const token = jwt.sign(
+        { userId: user[0].id },
+        'your_static_secret_here',  // Statisk 'hemmelighed'
+        { expiresIn: '1h' }
+      );
+
+      // Send token tilbage til brugeren
+      res.json({ token });
+    } else {
+      res.status(401).json({ message: 'Ugyldig email eller adgangskode' });
+    }
   } catch (error) {
-    res.status(500).json({ message: 'Serverfejl', error: error.message });
+    console.error('Error during login:', error);
+    res.status(500).json({ message: 'Serverfejl ved forsøg på login', error: error.message });
   }
 });
 
