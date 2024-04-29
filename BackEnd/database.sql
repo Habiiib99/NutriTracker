@@ -23,7 +23,9 @@ CREATE TABLE profiles (
   name VARCHAR(255) NOT NULL,
   age INT NOT NULL,
   gender VARCHAR(50) NOT NULL, -- Changed from VARCHAR(255) for gender as it's typically shorter
-  weight DECIMAL NOT NULL
+  weight DECIMAL NOT NULL,
+  email VARCHAR(255) NOT NULL, -- Added email
+  password VARCHAR(255) NOT NULL -- Added password
 );
 
 CREATE TABLE meals (
