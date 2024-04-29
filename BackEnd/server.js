@@ -9,6 +9,36 @@ const apiKey = '169792';
 
 app.use(express.json());
 
+
+// importere mysql
+import sql from 'mssql';
+
+const dbConfig = {
+  user: 'Habib',
+  password: 'Dhdh2399!',
+  server: 'servertesthabib.database.windows.net',
+  database: 'test',
+  options: {
+    encrypt: true, // for Azure
+    trustServerCertificate: false // nødvendig for lokal udvikling, ikke nødvendig for Azure
+  }
+};
+
+async function connectToDb() {
+  try {
+    // Opretter forbindelse og laver en ny instance af SQL-connection
+    const pool = await sql.connect(dbConfig);
+    console.log('Forbundet til databasen.');
+
+    // Her kan du køre en test forespørgsel for at sikre, at forbindelsen virker
+    const result = await pool.request().query('SELECT 1 AS number');
+    console.log(result);
+  } catch (err) {
+    console.error('Fejl ved forbindelse til databasen:', err);
+  }
+}
+connectToDb();
+
 // Funktion til at hente foodID til en given søgestreng
 async function fetchFoodID(searchString) {
   searchString = searchString.charAt(0).toUpperCase() + searchString.slice(1);
