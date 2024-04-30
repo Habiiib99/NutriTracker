@@ -259,11 +259,20 @@ app.post('/api/meals', async (req, res) => {
     let totalCarbohydrates = 0;
     let totalFiber = 0;
 
-    const mealResult = await db.request().query('INSERT INTO meals (name, userId) VALUES (?, ?)', [name, userId]);
+    // Bruger pool til at oprette en forbindelse til databasen - men kun til at oprette måltidet så ikke hele databasen. (Mere effektivt)
+    const pool = await sql.connect(dbConfig);
+
+    const mealResult = await pool.request()
+    .input('name', sql.VarChar, name)
+    .input('userId', sql.Int, userId)
+    .query('INSERT INTO meals (name, userId) OUTPUT INSERTED.id VALUES (@name, @userID)');
     const mealId = mealResult.recordset[0].insertId;
 
     for (const ingredient of ingredients) {
-      const ingredientDetailsResult = await db.request().query('SELECT kcal, protein, fat, carbohydrates, fiber FROM food_items WHERE id = ?', [ingredient.foodItemId]);
+      const ingredientDetailsResult = await pool.request()
+    .input('foodItemId', sql.Int, ingredient.foodItemId)
+    .query('SELECT kcal, protein, fat, carbohydrates, fiber FROM food_items WHERE id = @foodItemId');
+
       const ingredientDetails = ingredientDetailsResult.recordset;
 
       if (ingredientDetails.length > 0) {
@@ -278,12 +287,25 @@ app.post('/api/meals', async (req, res) => {
         totalFiber += fiber * factor;
       }
 
-      await db.request().query('INSERT INTO meal_food_items (mealId, foodItemId, weight) VALUES (?, ?, ?)', [mealId, ingredient.foodItemId, ingredient.weight]);
+    // Indsæt ingrediens i måltidet    
+    const insertIngredientResult = await pool.request()
+    .input('mealId', sql.Int, mealId)
+    .input('foodItemId', sql.Int, ingredient.foodItemId)
+    .input('weight', sql.Decimal(5, 2), ingredient.weight)
+    .query('INSERT INTO meal_food_items (mealId, foodItemId, weight) VALUES (@mealId, @foodItemId, @weight)'); 
     }
 
     // Gem total næringsdata i måltidet
-    await db.request().query('UPDATE meals SET totalEnergy = ?, totalProtein = ?, totalFat = ?, totalCarbohydrates = ?, totalFiber = ? WHERE id = ?', [totalEnergy, totalProtein, totalFat, totalCarbohydrates, totalFiber, mealId]);
-
+    const saveMealResult = await pool.request()
+    .input('totalEnergy', sql.Decimal(5, 2), totalEnergy)
+    .input('totalProtein', sql.Decimal(5, 2), totalProtein)
+    .input('totalFat', sql.Decimal(5, 2), totalFat)
+    .input('totalCarbohydrates', sql.Decimal(5, 2), totalCarbohydrates)
+    .input('totalFiber', sql.Decimal(5, 2), totalFiber)
+    .input('mealId', sql.Int, mealId)
+    .query('UPDATE meals SET totalEnergy = @totalEnergy, totalProtein = @totalProtein, totalFat = @totalFat, totalCarbohydrates = @totalCarbohydrates, totalFiber = @totalFiber WHERE id = @mealId');
+    
+    // Send respons med det nye måltid
     res.status(201).json({ id: mealId, name, userId, ingredients, totalEnergy, totalProtein, totalFat, totalCarbohydrates, totalFiber });
   } catch (error) {
     res.status(500).json({ message: 'Fejl ved oprettelse af måltid', error: error.message });
@@ -347,8 +369,6 @@ app.delete('/api/meals/:mealId', async (req, res) => {
     res.status(500).json({ message: 'Fejl ved sletning af måltid', error: error.message });
   }
 });
-
-
 
 
 
