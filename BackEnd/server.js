@@ -316,7 +316,6 @@ app.post('/api/meals', async (req, res) => {
     let totalEnergy = 0;
     let totalProtein = 0;
     let totalFat = 0;
-    let totalCarbohydrates = 0;
     let totalFiber = 0;
 
     // Bruger pool til at oprette en forbindelse til databasen - men kun til at oprette måltidet så ikke hele databasen. (Mere effektivt)
@@ -331,19 +330,18 @@ app.post('/api/meals', async (req, res) => {
     for (const ingredient of ingredients) {
       const ingredientDetailsResult = await pool.request()
     .input('foodItemId', sql.Int, ingredient.foodItemId)
-    .query('SELECT kcal, protein, fat, carbohydrates, fiber FROM food_items WHERE id = @foodItemId');
+    .query('SELECT kcal, protein, fat, fiber FROM food_items WHERE id = @foodItemId');
 
       const ingredientDetails = ingredientDetailsResult.recordset;
 
       if (ingredientDetails.length > 0) {
-        const { kcal, protein, fat, carbohydrates, fiber } = ingredientDetails[0];
+        const { kcal, protein, fat, fiber } = ingredientDetails[0];
 
         // Beregn bidrag fra hver ingrediens baseret på vægten
         const factor = ingredient.weight / 100; // Antager, at næringsdata er pr. 100 gram
         totalEnergy += kcal * factor;
         totalProtein += protein * factor;
         totalFat += fat * factor;
-        totalCarbohydrates += carbohydrates * factor;
         totalFiber += fiber * factor;
       }
 
@@ -360,13 +358,12 @@ app.post('/api/meals', async (req, res) => {
     .input('totalEnergy', sql.Decimal(5, 2), totalEnergy)
     .input('totalProtein', sql.Decimal(5, 2), totalProtein)
     .input('totalFat', sql.Decimal(5, 2), totalFat)
-    .input('totalCarbohydrates', sql.Decimal(5, 2), totalCarbohydrates)
     .input('totalFiber', sql.Decimal(5, 2), totalFiber)
     .input('mealId', sql.Int, mealId)
-    .query('UPDATE meals SET totalEnergy = @totalEnergy, totalProtein = @totalProtein, totalFat = @totalFat, totalCarbohydrates = @totalCarbohydrates, totalFiber = @totalFiber WHERE id = @mealId');
+    .query('UPDATE meals SET totalEnergy = @totalEnergy, totalProtein = @totalProtein, totalFat = @totalFat, totalFiber = @totalFiber WHERE id = @mealId');
     
     // Send respons med det nye måltid
-    res.status(201).json({ id: mealId, name, userId, ingredients, totalEnergy, totalProtein, totalFat, totalCarbohydrates, totalFiber });
+    res.status(201).json({ id: mealId, name, userId, ingredients, totalEnergy, totalProtein, totalFat, totalFiber });
   } catch (error) {
     res.status(500).json({ message: 'Fejl ved oprettelse af måltid', error: error.message });
   }
