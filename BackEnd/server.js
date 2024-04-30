@@ -212,7 +212,7 @@ app.post('/api/users', async (req, res) => {
 
 
 
-// Antag at dbConfig er din database konfiguration som vist tidligere
+// Antag at dbConfig er vores database konfiguration som vist tidligere
 sql.connect(dbConfig).then(pool => {
   // Nu kan du bruge pool i resten af din applikation
   app.delete('/api/users/:userId', async (req, res) => {
@@ -238,7 +238,7 @@ sql.connect(dbConfig).then(pool => {
 });
 
 
-// Opdatere brugeroplysninger
+// Opdaterer brugeroplysninger
 app.put('/api/users/:userId', async (req, res) => {
   const { name, age, gender, weight } = req.body;
   const userId = req.params.userId;
@@ -310,13 +310,13 @@ app.post('/api/auth/login', async (req, res) => {
 
 
 // **MEAL CREATOR**
+// 2a. Oprette et eller flere måltider, som skal bestå af 1 eller flere ingredienser
 app.post('/api/meals', async (req, res) => {
   const { name, userId, ingredients } = req.body; // Ingredienser som et array af objekter { foodItemId, weight }
   try {
     let totalEnergy = 0;
     let totalProtein = 0;
     let totalFat = 0;
-    let totalCarbohydrates = 0;
     let totalFiber = 0;
 
     // Bruger pool til at oprette en forbindelse til databasen - men kun til at oprette måltidet så ikke hele databasen. (Mere effektivt)
@@ -331,19 +331,18 @@ app.post('/api/meals', async (req, res) => {
     for (const ingredient of ingredients) {
       const ingredientDetailsResult = await pool.request()
     .input('foodItemId', sql.Int, ingredient.foodItemId)
-    .query('SELECT kcal, protein, fat, carbohydrates, fiber FROM food_items WHERE id = @foodItemId');
+    .query('SELECT kcal, protein, fat, fiber FROM food_items WHERE id = @foodItemId');
 
       const ingredientDetails = ingredientDetailsResult.recordset;
 
       if (ingredientDetails.length > 0) {
-        const { kcal, protein, fat, carbohydrates, fiber } = ingredientDetails[0];
+        const { kcal, protein, fat, fiber } = ingredientDetails[0];
 
-        // Beregn bidrag fra hver ingrediens baseret på vægten
+        // 2c. Beregn bidrag fra hver ingrediens baseret på vægten
         const factor = ingredient.weight / 100; // Antager, at næringsdata er pr. 100 gram
         totalEnergy += kcal * factor;
         totalProtein += protein * factor;
         totalFat += fat * factor;
-        totalCarbohydrates += carbohydrates * factor;
         totalFiber += fiber * factor;
       }
 
@@ -360,31 +359,14 @@ app.post('/api/meals', async (req, res) => {
     .input('totalEnergy', sql.Decimal(5, 2), totalEnergy)
     .input('totalProtein', sql.Decimal(5, 2), totalProtein)
     .input('totalFat', sql.Decimal(5, 2), totalFat)
-    .input('totalCarbohydrates', sql.Decimal(5, 2), totalCarbohydrates)
     .input('totalFiber', sql.Decimal(5, 2), totalFiber)
     .input('mealId', sql.Int, mealId)
-    .query('UPDATE meals SET totalEnergy = @totalEnergy, totalProtein = @totalProtein, totalFat = @totalFat, totalCarbohydrates = @totalCarbohydrates, totalFiber = @totalFiber WHERE id = @mealId');
+    .query('UPDATE meals SET totalEnergy = @totalEnergy, totalProtein = @totalProtein, totalFat = @totalFat, totalFiber = @totalFiber WHERE id = @mealId');
     
     // Send respons med det nye måltid
-    res.status(201).json({ id: mealId, name, userId, ingredients, totalEnergy, totalProtein, totalFat, totalCarbohydrates, totalFiber });
+    res.status(201).json({ id: mealId, name, userId, ingredients, totalEnergy, totalProtein, totalFat, totalFiber });
   } catch (error) {
     res.status(500).json({ message: 'Fejl ved oprettelse af måltid', error: error.message });
-  }
-});
-
-// Søge efter ingredienser
-app.get('/api/ingredients/search', async (req, res) => {
-  const { searchString } = req.query; // Antager at søgestrengen sendes som en query parameter
-  try {
-    const foodID = await fetchFoodID(searchString);
-    if (foodID) {
-      const nutrientValue = await fetchNutrientValue(foodID, "nødvendig sortKey"); // Du skal vide, hvilken sortKey der er relevant for din app
-      res.json({ nutrientValue });
-    } else {
-      res.status(404).json({ message: 'Ingrediens ikke fundet' });
-    }
-  } catch (error) {
-    res.status(500).json({ message: 'Server fejl', error });
   }
 });
 
@@ -414,7 +396,42 @@ app.get('/api/meals/:mealId', async (req, res) => {
   }
 });
 
-// Slet et måltid
+// 2b Endpoint for at søge efter de rigtige fødevarer
+// Test i Insomnia ved at skrive: http://localhost:PORT/api/ingredients/search?searchString=apple - husk at ændre PORT
+app.get('/api/ingredients/search', async (req, res) => {
+  const { searchString } = req.query;
+  try {
+    const foodID = await fetchFoodID(searchString);
+    if (foodID) {
+      res.json({ foodID });
+    } else {
+      res.status(404).json({ message: 'Fødevare ikke fundet' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Server fejl', error });
+  }
+});
+
+
+/* Søgefunktion e. Det skal være muligt at finde information om hver enkelt 
+fødevare i datasættet samt dets samlede ernæringsindhold*/
+// Endpoint for at hente næringsværdier baseret på foodID og sortKey
+app.get('/nutrient-value/:foodID/:sortKey', async (req, res) => {
+  try {
+    const nutrientValue = await fetchNutrientValue(req.params.foodID, req.params.sortKey);
+    if (nutrientValue) {
+      res.json({ nutrientValue });
+    } else {
+      res.status(404).json({ message: 'Næringsværdi ikke fundet' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Server fejl', error });
+  }
+});
+
+/* d. Det skal være muligt at se hvilke ingredienser, hvert måltid består af, samt vægten af hver ingrediens i måltidet*/
+
+// 3f. Slet et måltid MANGLER MULIGHED FOR AT REDIGERE MÅLTID
 app.delete('/api/meals/:mealId', async (req, res) => {
   const { mealId } = req.params; // ID for måltidet der skal slettes
   const query = 'DELETE FROM meals WHERE id = ?';
@@ -429,7 +446,6 @@ app.delete('/api/meals/:mealId', async (req, res) => {
     res.status(500).json({ message: 'Fejl ved sletning af måltid', error: error.message });
   }
 });
-
 
 
 // **MEAL TRACKER**
