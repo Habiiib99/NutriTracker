@@ -654,18 +654,6 @@ app.post('/api/activity-tracker/activities', async (req, res) => {
 });
 
 
-// endpoint til stofskifte 
-app.get('/api/activity-tracker/bmr/:userId', async (req, res) => {
-  const { userId } = req.params;
-  try {
-    const userDetails = await getUserDetails(userId);
-    const bmr = calculateBMR(userDetails.weight, userDetails.age, userDetails.gender);
-
-    res.json({ userId, bmr: bmr });
-  } catch (error) {
-    res.status(500).json({ message: 'Fejl ved beregning af basalstofskifte', error: error.message });
-  }
-});
 
 
 
