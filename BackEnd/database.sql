@@ -32,6 +32,7 @@ CREATE TABLE meals (
   id INT PRIMARY KEY IDENTITY(1,1),
   name VARCHAR(255) NOT NULL,
   userId INT NOT NULL,
+  weight INT NOT NULL,
   FOREIGN KEY (userId) REFERENCES profiles(id) -- Added foreign key relationship
 );
 
