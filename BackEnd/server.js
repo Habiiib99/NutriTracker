@@ -2,7 +2,7 @@ import express from 'express';
 import fetch from 'node-fetch';
 
 const app = express();
-const port = 2000;
+const port = 6000;
 const apiKey = '169792';
 app.use(express.json());
 
@@ -211,7 +211,7 @@ app.put('/api/users/:userId', async (req, res) => {
 });
 
 
-// Logik for at logge en bruger ind
+// Logik for at logge en bruger ind (**opdateres med evt frontend**)
 import jwt from 'jsonwebtoken';
 
 app.post('/api/auth/login', async (req, res) => {
@@ -471,20 +471,58 @@ app.delete('/api/meal-tracker/intake/:intakeId', async (req, res) => {
 
 
 // **ACTIVITY TRACKER** => Dette skal opdateres/ændres
-function calculateBMR(weight, height, age, gender) {
-  let bmr;
+
+// Funktioner ***
+function calculateBMR(weight, age, gender) {
+  let bmr = 0;  // Basalstofskifte i MJ/dag
+
+  // Konverter alder til et tal for at kunne anvende i logik
+  age = parseInt(age, 10);
+
   if (gender === 'male') {
-    bmr = 88.362 + (13.397 * weight) + (4.799 * height) - (5.677 * age);
-  } else {
-    bmr = 447.593 + (9.247 * weight) + (3.098 * height) - (4.330 * age);
+    if (age <= 3) {
+      bmr = 0.249 * weight - 0.13;
+    } else if (age <= 10) {
+      bmr = 0.095 * weight + 2.11;
+    } else if (age <= 18) {
+      bmr = 0.074 * weight + 2.75;
+    } else if (age <= 30) {
+      bmr = 0.064 * weight + 2.84;
+    } else if (age <= 60) {
+      bmr = 0.0485 * weight + 3.67;
+    } else if (age <= 75) {
+      bmr = 0.0499 * weight + 2.93;
+    } else {
+      bmr = 0.035 * weight + 3.43;
+    }
+  } else if (gender === 'female') { // female
+    if (age <= 3) {
+      bmr = 0.244 * weight - 0.13;
+    } else if (age <= 10) {
+      bmr = 0.085 * weight + 2.03;
+    } else if (age <= 18) {
+      bmr = 0.056 * weight + 2.90;
+    } else if (age <= 30) {
+      bmr = 0.0615 * weight + 2.08;
+    } else if (age <= 60) {
+      bmr = 0.0364 * weight + 3.47;
+    } else if (age <= 75) {
+      bmr = 0.0386 * weight + 2.88;
+    } else {
+      bmr = 0.0410 * weight + 2.61;
+    }
   }
-  return bmr;
+
+  return bmr 
+
 }
+
 
 // registrere en aktivitet
 app.post('/api/activity-tracker/activities', async (req, res) => {
   const { userId, activityType, duration, date } = req.body;
-  const caloriesBurned = calculateCalories(activityType, duration); // Denne funktion skal du definere
+  const caloriesBurned = calculateCalories(activityType, duration); // funktion til kalorie beregning (måske ændres)
+
   try {
     const result = await db.query(
       'INSERT INTO activities (userId, activityType, duration, caloriesBurned, date) VALUES (?, ?, ?, ?, ?)',
@@ -502,16 +540,19 @@ app.post('/api/activity-tracker/activities', async (req, res) => {
     res.status(500).json({ message: 'Fejl ved registrering af aktivitet', error: error.message });
   }
 });
-// beregne basalstofskifte
+
+
+// endpoint til stofskifte 
 app.get('/api/activity-tracker/bmr/:userId', async (req, res) => {
   const { userId } = req.params;
-  
-  // Antag at vi har en funktion til at hente en brugers alder, vægt og køn baseret på userId
-  const user = await getUserDetails(userId); // Denne funktion skal du definere
-  
-  const bmr = calculateBMR(user.weight, user.height, user.age, user.gender); // Denne funktion skal du definere
-  
-  res.json({ userId, bmr });
+  try {
+    const userDetails = await getUserDetails(userId);
+    const bmr = calculateBMR(userDetails.weight, userDetails.age, userDetails.gender);
+
+    res.json({ userId, bmr: bmr });
+  } catch (error) {
+    res.status(500).json({ message: 'Fejl ved beregning af basalstofskifte', error: error.message });
+  }
 });
 
 
