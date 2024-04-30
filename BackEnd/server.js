@@ -2,7 +2,7 @@ import express from 'express';
 import fetch from 'node-fetch';
 
 const app = express();
-const port = 6000;
+const port = 2220;
 const apiKey = '169792';
 app.use(express.json());
 
@@ -124,16 +124,68 @@ app.get('/nutrient-value/:foodID/:sortKey', async (req, res) => {
 
 
 // **BRUGERSTYRING**
+
+// Funktion til bmr
+function calculateBMR(weight, age, gender) {
+  let bmr = 0;  // Basalstofskifte i MJ/dag
+
+  // Konverter alder til et tal for at kunne anvende i logik
+  age = parseInt(age, 10);
+
+  if (gender === 'male') {
+    if (age <= 3) {
+      bmr = 0.249 * weight - 0.13;
+    } else if (age <= 10) {
+      bmr = 0.095 * weight + 2.11;
+    } else if (age <= 18) {
+      bmr = 0.074 * weight + 2.75;
+    } else if (age <= 30) {
+      bmr = 0.064 * weight + 2.84;
+    } else if (age <= 60) {
+      bmr = 0.0485 * weight + 3.67;
+    } else if (age <= 75) {
+      bmr = 0.0499 * weight + 2.93;
+    } else {
+      bmr = 0.035 * weight + 3.43;
+    }
+  } else if (gender === 'female') { // female
+    if (age <= 3) {
+      bmr = 0.244 * weight - 0.13;
+    } else if (age <= 10) {
+      bmr = 0.085 * weight + 2.03;
+    } else if (age <= 18) {
+      bmr = 0.056 * weight + 2.90;
+    } else if (age <= 30) {
+      bmr = 0.0615 * weight + 2.08;
+    } else if (age <= 60) {
+      bmr = 0.0364 * weight + 3.47;
+    } else if (age <= 75) {
+      bmr = 0.0386 * weight + 2.88;
+    } else {
+      bmr = 0.0410 * weight + 2.61;
+    }
+  }
+
+  return bmr 
+
+}
+
 import bcrypt from 'bcrypt';
 // Husk at bruge middleware for at parse JSON body
 app.use(express.json());
+
 app.post('/api/users', async (req, res) => {
   const { name, age, gender, weight, email, password } = req.body;
+  
+  // Beregner BMR
+  const bmr = calculateBMR(weight, age, gender);
+  
   try {
     // Forbinder til databasen
     const pool = await sql.connect(dbConfig);
     // Hasher brugerens password
     const hashedPassword = await bcrypt.hash(password, 10);
+    
     // Udfører SQL query med parameterized inputs
     const result = await pool.request()
       .input('name', sql.VarChar, name)
@@ -142,10 +194,13 @@ app.post('/api/users', async (req, res) => {
       .input('weight', sql.Decimal(5, 2), weight)
       .input('email', sql.VarChar, email)
       .input('password', sql.VarChar, hashedPassword)
-      .query('INSERT INTO profiles (name, age, gender, weight, email, password) OUTPUT INSERTED.id VALUES (@name, @age, @gender, @weight, @email, @password)');
-    // Genererer en JWT for den nye bruger
+      .input('bmr', sql.Decimal(10, 4), bmr)
+      .query('INSERT INTO profiles (name, age, gender, weight, bmr, email, password) OUTPUT INSERTED.id VALUES (@name, @age, @gender, @weight, @bmr, @email, @password)');
+      
+      // Genererer en JWT for den nye bruger
     const newUser = { id: result.recordset[0].id, name, age, gender, weight, email };
     const token = jwt.sign({ userId: newUser.id }, 'test', { expiresIn: '1h' });
+    
     // Sender det nye brugerobjekt og token tilbage som respons
     res.status(201).json({ newUser, token });
   } catch (error) {
@@ -183,10 +238,13 @@ sql.connect(dbConfig).then(pool => {
 });
 
 
-
+// Opdatere brugeroplysninger
 app.put('/api/users/:userId', async (req, res) => {
   const { name, age, gender, weight } = req.body;
   const userId = req.params.userId;
+
+   // Beregner ny BMR
+   const bmr = calculateBMR(weight, age, gender);
 
   try {
     const pool = await sql.connect(dbConfig); // sikre at forbindelsen er aktiv
@@ -197,7 +255,9 @@ app.put('/api/users/:userId', async (req, res) => {
       .input('age', sql.Int, age)
       .input('gender', sql.VarChar, gender)
       .input('weight', sql.Decimal(5, 2), weight)
-      .query('UPDATE profiles SET name = @name, age = @age, gender = @gender, weight = @weight WHERE id = @userId');
+      .input('bmr', sql.Decimal(10, 4), bmr)
+      .query('UPDATE profiles SET name = @name, age = @age, gender = @gender, weight = @weight, bmr = @bmr WHERE id = @userId');
+
 
     if (result.rowsAffected[0] > 0) {
       res.json({ message: 'Bruger opdateret', id: userId, name, age, gender, weight });
@@ -472,53 +532,9 @@ app.delete('/api/meal-tracker/intake/:intakeId', async (req, res) => {
 
 // **ACTIVITY TRACKER** => Dette skal opdateres/ændres
 
-// Funktioner ***
-function calculateBMR(weight, age, gender) {
-  let bmr = 0;  // Basalstofskifte i MJ/dag
-
-  // Konverter alder til et tal for at kunne anvende i logik
-  age = parseInt(age, 10);
-
-  if (gender === 'male') {
-    if (age <= 3) {
-      bmr = 0.249 * weight - 0.13;
-    } else if (age <= 10) {
-      bmr = 0.095 * weight + 2.11;
-    } else if (age <= 18) {
-      bmr = 0.074 * weight + 2.75;
-    } else if (age <= 30) {
-      bmr = 0.064 * weight + 2.84;
-    } else if (age <= 60) {
-      bmr = 0.0485 * weight + 3.67;
-    } else if (age <= 75) {
-      bmr = 0.0499 * weight + 2.93;
-    } else {
-      bmr = 0.035 * weight + 3.43;
-    }
-  } else if (gender === 'female') { // female
-    if (age <= 3) {
-      bmr = 0.244 * weight - 0.13;
-    } else if (age <= 10) {
-      bmr = 0.085 * weight + 2.03;
-    } else if (age <= 18) {
-      bmr = 0.056 * weight + 2.90;
-    } else if (age <= 30) {
-      bmr = 0.0615 * weight + 2.08;
-    } else if (age <= 60) {
-      bmr = 0.0364 * weight + 3.47;
-    } else if (age <= 75) {
-      bmr = 0.0386 * weight + 2.88;
-    } else {
-      bmr = 0.0410 * weight + 2.61;
-    }
-  }
-
-  return bmr 
-
-}
 
 //Funktion til at tracke aktiviteter og beregne kalorier
-
+/*
 // Definition af objekter for forskellige typer aktiviteter
 const almindeligeHverdagsaktiviteter = {
     "Almindelig gang": 215,
@@ -615,7 +631,7 @@ function calculateCalories() {
     const calories = (caloriesPerHour * minutes) / 60;
     console.log(`Kalorier forbrændt: ${calories}`);
 }
-
+*/
 
 // registrere en aktivitet
 app.post('/api/activity-tracker/activities', async (req, res) => {
