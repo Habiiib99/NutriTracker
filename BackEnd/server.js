@@ -316,6 +316,7 @@ app.post('/api/meals', async (req, res) => {
     let totalEnergy = 0;
     let totalProtein = 0;
     let totalFat = 0;
+    let totalCarbohydrates = 0;
     let totalFiber = 0;
 
     // Bruger pool til at oprette en forbindelse til databasen - men kun til at oprette måltidet så ikke hele databasen. (Mere effektivt)
@@ -330,18 +331,19 @@ app.post('/api/meals', async (req, res) => {
     for (const ingredient of ingredients) {
       const ingredientDetailsResult = await pool.request()
     .input('foodItemId', sql.Int, ingredient.foodItemId)
-    .query('SELECT kcal, protein, fat, fiber FROM food_items WHERE id = @foodItemId');
+    .query('SELECT kcal, protein, fat, carbohydrates, fiber FROM food_items WHERE id = @foodItemId');
 
       const ingredientDetails = ingredientDetailsResult.recordset;
 
       if (ingredientDetails.length > 0) {
-        const { kcal, protein, fat, fiber } = ingredientDetails[0];
+        const { kcal, protein, fat, carbohydrates, fiber } = ingredientDetails[0];
 
         // Beregn bidrag fra hver ingrediens baseret på vægten
         const factor = ingredient.weight / 100; // Antager, at næringsdata er pr. 100 gram
         totalEnergy += kcal * factor;
         totalProtein += protein * factor;
         totalFat += fat * factor;
+        totalCarbohydrates += carbohydrates * factor;
         totalFiber += fiber * factor;
       }
 
@@ -358,12 +360,13 @@ app.post('/api/meals', async (req, res) => {
     .input('totalEnergy', sql.Decimal(5, 2), totalEnergy)
     .input('totalProtein', sql.Decimal(5, 2), totalProtein)
     .input('totalFat', sql.Decimal(5, 2), totalFat)
+    .input('totalCarbohydrates', sql.Decimal(5, 2), totalCarbohydrates)
     .input('totalFiber', sql.Decimal(5, 2), totalFiber)
     .input('mealId', sql.Int, mealId)
-    .query('UPDATE meals SET totalEnergy = @totalEnergy, totalProtein = @totalProtein, totalFat = @totalFat, totalFiber = @totalFiber WHERE id = @mealId');
+    .query('UPDATE meals SET totalEnergy = @totalEnergy, totalProtein = @totalProtein, totalFat = @totalFat, totalCarbohydrates = @totalCarbohydrates, totalFiber = @totalFiber WHERE id = @mealId');
     
     // Send respons med det nye måltid
-    res.status(201).json({ id: mealId, name, userId, ingredients, totalEnergy, totalProtein, totalFat, totalFiber });
+    res.status(201).json({ id: mealId, name, userId, ingredients, totalEnergy, totalProtein, totalFat, totalCarbohydrates, totalFiber });
   } catch (error) {
     res.status(500).json({ message: 'Fejl ved oprettelse af måltid', error: error.message });
   }
@@ -630,28 +633,39 @@ function calculateCalories() {
 }
 */
 
-// registrere en aktivitet
+// registrere en aktivitet (OBS: ændre denne funktions dato til kun indtil minutter, ikke sekunder)
 app.post('/api/activity-tracker/activities', async (req, res) => {
-  const { userId, activityType, duration, date } = req.body;
-  const caloriesBurned = calculateCalories(activityType, duration); // funktion til kalorie beregning (måske ændres)
+  const { userId, activityType, duration, caloriesBurned, activityDate } = req.body;
 
   try {
-    const result = await db.query(
-      'INSERT INTO activities (userId, activityType, duration, caloriesBurned, date) VALUES (?, ?, ?, ?, ?)',
-      [userId, activityType, duration, caloriesBurned, date]
-    );
-    res.status(201).json({
-      id: result.insertId,
-      userId,
-      activityType,
-      duration,
-      caloriesBurned,
-      date
-    });
+    const pool = await sql.connect(dbConfig);
+    const result = await pool.request()
+      .input('userId', sql.Int, userId)
+      .input('activityType', sql.VarChar, activityType)
+      .input('duration', sql.Decimal(5, 2), parseFloat(duration))
+      .input('caloriesBurned', sql.Decimal(10, 2), parseFloat(caloriesBurned))
+      .input('activityDate', sql.DateTime, new Date(activityDate))
+      .query('INSERT INTO activities (userId, activityType, duration, caloriesBurned, activityDate) OUTPUT INSERTED.id VALUES (@userId, @activityType, @duration, @caloriesBurned, @activityDate)');
+
+    if (result.recordset.length > 0) {
+      res.status(201).json({
+        id: result.recordset[0].id,
+        userId,
+        activityType,
+        duration,
+        caloriesBurned,
+        activityDate
+      });
+    } else {
+      res.status(404).json({ message: 'Ingen aktivitet blev registreret' });
+    }
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: 'Fejl ved registrering af aktivitet', error: error.message });
   }
 });
+
+
 
 
 
