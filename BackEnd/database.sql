@@ -14,7 +14,7 @@ CREATE TABLE food_items (
   kcal DECIMAL NOT NULL,
   protein DECIMAL NOT NULL,
   fat DECIMAL NOT NULL,
-  carbohydrates DECIMAL NOT NULL, -- Added carbohydrates
+  carbohydrates DECIMAL NOT NULL, -- Added carbohydrates (remember to delete from azure!!!)
   fiber DECIMAL NOT NULL
 );
 
@@ -26,15 +26,18 @@ CREATE TABLE profiles (
   weight DECIMAL NOT NULL,
   email VARCHAR(255) NOT NULL, -- Added email
   password VARCHAR(255) NOT NULL -- Added password
+  -- HUSK AT TILFØJE BMR!!!
 );
 
 CREATE TABLE meals (
   id INT PRIMARY KEY IDENTITY(1,1),
   name VARCHAR(255) NOT NULL,
   userId INT NOT NULL,
-  weight INT NOT NULL,
   FOREIGN KEY (userId) REFERENCES profiles(id) -- Added foreign key relationship
 );
+-- Tilføj til Azure Meals:
+-- alter table [dbo].[meals]
+-- add weight decimal(5,2) null;
 
 CREATE TABLE meal_food_items (
   mealId INT NOT NULL, -- Renamed for clarity
