@@ -38,6 +38,7 @@ CREATE TABLE meals (
 -- Tilføj til Azure Meals:
 -- alter table [dbo].[meals]
 -- add weight decimal(5,2) null;
+-- Tror ikke weight skal tilføjes til meals her, for så fremgår det som vægten på hele måltidet og ikke ingredienser, når måltidet skal tilføjes
 
 CREATE TABLE meal_food_items (
   mealId INT NOT NULL, -- Renamed for clarity
