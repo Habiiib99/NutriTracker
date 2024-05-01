@@ -546,12 +546,9 @@ app.delete('/api/meal-tracker/intake/:intakeId', async (req, res) => {
 
 
 
-// **ACTIVITY TRACKER** => Dette skal opdateres/ændres
+//Man skal tilføje en ny attribute "activityName" til activities tabellen i databasen før at den virker
 
-
-//Funktion til at tracke aktiviteter og beregne kalorier
-/*
-// Definition af objekter for forskellige typer aktiviteter
+// **ACTIVITY TRACKER** => 
 const almindeligeHverdagsaktiviteter = {
     "Almindelig gang": 215,
     "Gang ned af trapper": 414,
@@ -600,6 +597,71 @@ const forskelligeTyperArbejde = {
     "Murerarbejde": 207,
     "Hugge og slæbe på brænde": 1168
 };
+
+
+// Endpoint for at tilføje en aktivitet (OBS: ændre denne funktions dato til kun indtil minutter, ikke sekunder)
+app.post('/activityTracker', async (req, res) => {
+    try {
+        const { userId, activityType, minutes, activityDate } = req.body;
+
+        // Aktiviteter baseret på type
+        const activities = {
+            everyday: almindeligeHverdagsaktiviteter,
+            sports: sportsAktiviteter,
+            work: forskelligeTyperArbejde
+        };
+
+        // Hent den relevante liste af aktiviteter baseret på typen
+        const activityList = activities[activityType];
+
+        // Søg efter den specificerede aktivitet
+        const activityName = req.body.activityName;
+        const caloriesPerHour = activityList[activityName];
+
+        // Beregn kalorier
+        if (!activityName || isNaN(minutes) || caloriesPerHour === undefined) {
+            return res.status(400).send("Indtast venligst både aktivitet og antal minutter.");
+        }
+
+        const calories = (caloriesPerHour * minutes) / 60;
+
+        // Forbinder til databasen
+        const pool = await sql.connect(dbConfig);
+
+        // Indsæt aktivitet i databasen
+        const result = await pool.request()
+            .input('userId', sql.Int, userId)
+            .input('activityType', sql.VarChar, activityType)
+            .input('activityName', sql.VarChar, activityName)
+            .input('duration', sql.Decimal(5, 2), parseFloat(minutes))
+            .input('caloriesBurned', sql.Decimal(10, 2), parseFloat(calories))
+            .input('activityDate', sql.DateTime, new Date(activityDate))
+            .query('INSERT INTO activities (userId, activityType, activityName, duration, caloriesBurned, activityDate) OUTPUT INSERTED.id VALUES (@userId, @activityType, @activityName, @duration, @caloriesBurned, @activityDate)');
+
+        // Tjek om aktiviteten blev indsat succesfuldt
+        if (result.recordset.length > 0) {
+            res.status(201).json({
+                id: result.recordset[0].id,
+                userId,
+                activityType,
+                activityName,
+                duration: minutes,
+                caloriesBurned: calories,
+                activityDate
+            });
+        } else {
+            res.status(500).json({ message: 'Fejl ved tilføjelse af aktivitet til database.' });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Fejl ved oprettelse af aktivitet.', error: error.message });
+    }
+});
+
+//Funktion til at tracke aktiviteter og beregne kalorier
+/*
+// Definition af objekter for forskellige typer aktiviteter
+
 
 // Referencer til HTML-elementer
 const activityTypeSelect = document.getElementById("activityType");
@@ -650,42 +712,57 @@ function calculateCalories() {
 */
 
 // registrere en aktivitet (OBS: ændre denne funktions dato til kun indtil minutter, ikke sekunder)
-app.post('/api/activity-tracker/activities', async (req, res) => {
-  const { userId, activityType, duration, caloriesBurned, activityDate } = req.body;
 
-  try {
-    const pool = await sql.connect(dbConfig);
-    const result = await pool.request()
-      .input('userId', sql.Int, userId)
-      .input('activityType', sql.VarChar, activityType)
-      .input('duration', sql.Decimal(5, 2), parseFloat(duration))
-      .input('caloriesBurned', sql.Decimal(10, 2), parseFloat(caloriesBurned))
-      .input('activityDate', sql.DateTime, new Date(activityDate))
-      .query('INSERT INTO activities (userId, activityType, duration, caloriesBurned, activityDate) OUTPUT INSERTED.id VALUES (@userId, @activityType, @duration, @caloriesBurned, @activityDate)');
+/*
 
-    if (result.recordset.length > 0) {
-      res.status(201).json({
-        id: result.recordset[0].id,
-        userId,
-        activityType,
-        duration,
-        caloriesBurned,
-        activityDate
-      });
-    } else {
-      res.status(404).json({ message: 'Ingen aktivitet blev registreret' });
+
+// Referencer til HTML-elementer
+const activityTypeSelect = document.getElementById("activityType");
+const activityNameSelect = document.getElementById("activityName");
+const minutesInput = document.getElementById("minutes");
+
+// Funktion til at udfylde aktivitetsdropdown-menuen baseret på den valgte type
+activityTypeSelect.addEventListener("change", function() {
+    const selectedType = this.value;
+    let activities;
+    if (selectedType === "everyday") {
+        activities = almindeligeHverdagsaktiviteter;
+    } else if (selectedType === "sports") {
+        activities = sportsAktiviteter;
+    } else if (selectedType === "work") {
+        activities = forskelligeTyperArbejde;
     }
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Fejl ved registrering af aktivitet', error: error.message });
-  }
+    populateActivityDropdown(activities);
 });
 
+// Funktion til at udfylde aktivitetsdropdown-menuen
+function populateActivityDropdown(activities) {
+    activityNameSelect.innerHTML = "";
+    for (const activity in activities) {
+        const option = document.createElement("option");
+        option.value = activity;
+        option.textContent = activity;
+        activityNameSelect.appendChild(option);
+    }
+}
 
+// Kald populateActivityDropdown() initialt for at udfylde dropdown-menuen
+populateActivityDropdown(almindeligeHverdagsaktiviteter);
 
-
-
-
+function calculateCalories() {
+    const selectedActivity = activityNameSelect.value;
+    const minutes = parseInt(minutesInput.value);
+    const caloriesPerHour = activityTypeSelect.value === "everyday" ? almindeligeHverdagsaktiviteter[selectedActivity] :
+                            activityTypeSelect.value === "sports" ? sportsAktiviteter[selectedActivity] :
+                            activityTypeSelect.value === "work" ? forskelligeTyperArbejde[selectedActivity] : null;
+    if (!selectedActivity || isNaN(minutes) || caloriesPerHour === null) {
+        console.log("Indtast venligst både aktivitet og antal minutter.");
+        return;
+    }
+    const calories = (caloriesPerHour * minutes) / 60;
+    console.log(`Kalorier forbrændt: ${calories}`);
+}
+*/
 
 
 
