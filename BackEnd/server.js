@@ -309,10 +309,35 @@ app.post('/api/auth/login', async (req, res) => {
 
 
 
+
 // **MEAL CREATOR**
 // 2a. Oprette et eller flere måltider, som skal bestå af 1 eller flere ingredienser
+// ENDPOINT VIRKER, men ikke med weight.
+/* Indsætter dette i Insomnia (url http://localhost:PORT/api/meals), men får fejl i weight.
+I azure fremgår måltidet, men med weight = null.: 
+{
+	"name": "mad",
+	"userId": 2,
+	"ingredients": [
+		{
+			"foodItemId": 187,
+			"weight": 100 
+		},
+		{
+			"foodItemId": 5,
+			"weight": 150
+		},
+		{
+			"foodItemId": 3,
+			"weight": 50
+		}
+	]
+}*/
+/* Test i Insomnia ved at skrive:
+
+*/
 app.post('/api/meals', async (req, res) => {
-  const { name, userId, ingredients } = req.body; // Ingredienser som et array af objekter { foodItemId, weight }
+  const { name, userId, ingredients, weight } = req.body; // Ingredienser som et array af objekter { foodItemId, weight }
   try {
     let totalEnergy = 0;
     let totalProtein = 0;
@@ -325,7 +350,8 @@ app.post('/api/meals', async (req, res) => {
     const mealResult = await pool.request()
     .input('name', sql.VarChar, name)
     .input('userId', sql.Int, userId)
-    .query('INSERT INTO meals (name, userId) OUTPUT INSERTED.id VALUES (@name, @userID)');
+    .input('weight', sql.Decimal(6, 2), weight)
+    .query('INSERT INTO meals (name, userId, weight) OUTPUT INSERTED.id VALUES (@name, @userId, @weight)');
     const mealId = mealResult.recordset[0].insertId;
 
     for (const ingredient of ingredients) {
@@ -370,8 +396,9 @@ app.post('/api/meals', async (req, res) => {
   }
 });
 
-// Finde et måltid og se dens ingredienser og vægt
-app.get('/api/meals/:mealId', async (req, res) => {
+// 2d. Finde et måltid og se dens ingredienser og vægt
+
+app.get('/api/meals/:id', async (req, res) => {
   const { mealId } = req.params;
   try {
     // Hent måltidet og dets basale oplysninger
@@ -397,6 +424,7 @@ app.get('/api/meals/:mealId', async (req, res) => {
 });
 
 // 2b Endpoint for at søge efter de rigtige fødevarer
+// ENDPOINT VIRKER
 // Test i Insomnia ved at skrive: http://localhost:PORT/api/ingredients/search?searchString=apple - husk at ændre PORT
 app.get('/api/ingredients/search', async (req, res) => {
   const { searchString } = req.query;
@@ -413,9 +441,12 @@ app.get('/api/ingredients/search', async (req, res) => {
 });
 
 
-/* Søgefunktion e. Det skal være muligt at finde information om hver enkelt 
-fødevare i datasættet samt dets samlede ernæringsindhold*/
+/* Søgefunktion e. Det skal være muligt at finde information om hver enkelt fødevare i datasættet samt dets samlede ernæringsindhold*/
 // Endpoint for at hente næringsværdier baseret på foodID og sortKey
+// ENDPOINT VIRKER
+// Test ved http://localhost:2800/nutrient-value/'foodItemId'/'sortKey' (f.eks. 1/1110)
+
+// MANGLER: mulighed for at finde det samlede ernæringsindhold, måske det er noget front end? Altså at alle sortKeys bliver hentet.
 app.get('/nutrient-value/:foodID/:sortKey', async (req, res) => {
   try {
     const nutrientValue = await fetchNutrientValue(req.params.foodID, req.params.sortKey);
@@ -429,14 +460,16 @@ app.get('/nutrient-value/:foodID/:sortKey', async (req, res) => {
   }
 });
 
-/* d. Det skal være muligt at se hvilke ingredienser, hvert måltid består af, samt vægten af hver ingrediens i måltidet*/
-
-// 3f. Slet et måltid MANGLER MULIGHED FOR AT REDIGERE MÅLTID
-app.delete('/api/meals/:mealId', async (req, res) => {
+// 3f. OBS - HØRER FAKTISK TIL MEAL TRACKER Slet et måltid samt mulighed for at redigere
+// MANGLER MULIGHED FOR AT REDIGERE MÅLTID
+// IKKE FÆRDIG
+app.delete('/api/meals/:id', async (req, res) => {
   const { mealId } = req.params; // ID for måltidet der skal slettes
   const query = 'DELETE FROM meals WHERE id = ?';
+
+  const pool = await sql.connect(dbConfig);
   try {
-    const result = await db.query(query, [mealId]);
+    const result = await pool.request(query, [mealId]);
     if (result.affectedRows) {
       res.json({ message: 'Måltid slettet' });
     } else {
@@ -446,6 +479,9 @@ app.delete('/api/meals/:mealId', async (req, res) => {
     res.status(500).json({ message: 'Fejl ved sletning af måltid', error: error.message });
   }
 });
+
+
+
 
 
 // **MEAL TRACKER**
