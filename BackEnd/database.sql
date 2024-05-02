@@ -50,6 +50,14 @@ CREATE TABLE dbo.meals (
 );
 -- add weight decimal(5,2) null;
 
+CREATE TABLE dbo.tracker (
+    mealId INT PRIMARY KEY NOT NULL,
+    ingredientId INT PRIMARY KEY NOT NULL,
+    weight DECIMAL NOT NULL,
+    userId INT,
+    FOREIGN KEY (userId) REFERENCES dbo.profiles(userId)
+);
+
 
 CREATE TABLE dbo.activities (
     id INT PRIMARY KEY NOT NULL,
