@@ -310,11 +310,13 @@ app.post('/api/auth/login', async (req, res) => {
 
 
 
+
 // **MEAL CREATOR**
 // 2a. Oprette et eller flere måltider, som skal bestå af 1 eller flere ingredienser
 // ENDPOINT VIRKER, men ikke med weight.
 /* Indsætter dette i Insomnia (url http://localhost:PORT/api/meals), men får fejl i weight.
-I azure fremgår måltidet, men med weight = null.: 
+I azure fremgår måltidet derfor, men med weight = null.:
+Test i Insomnia ved at skrive:
 {
 	"name": "mad",
 	"userId": 2,
@@ -333,11 +335,8 @@ I azure fremgår måltidet, men med weight = null.:
 		}
 	]
 }*/
-/* Test i Insomnia ved at skrive:
-
-*/
 app.post('/api/meals', async (req, res) => {
-  const { name, userId, ingredients, weight } = req.body; // Ingredienser som et array af objekter { foodItemId, weight }
+  const { name, userId, ingredients } = req.body; // Ingredienser som et array af objekter { foodItemId }
   try {
     let totalEnergy = 0;
     let totalProtein = 0;
@@ -350,14 +349,13 @@ app.post('/api/meals', async (req, res) => {
     const mealResult = await pool.request()
     .input('name', sql.VarChar, name)
     .input('userId', sql.Int, userId)
-    .input('weight', sql.Decimal(6, 2), weight)
-    .query('INSERT INTO meals (name, userId, weight) OUTPUT INSERTED.id VALUES (@name, @userId, @weight)');
+    .query('INSERT INTO meals (name, userId) OUTPUT INSERTED.id VALUES (@name, @userId)');
     const mealId = mealResult.recordset[0].insertId;
 
     for (const ingredient of ingredients) {
       const ingredientDetailsResult = await pool.request()
-    .input('foodItemId', sql.Int, ingredient.foodItemId)
-    .query('SELECT kcal, protein, fat, fiber FROM food_items WHERE id = @foodItemId');
+    .input('id', sql.Int, ingredient.id)
+    .query('SELECT kcal, protein, fat, fiber FROM food_items WHERE id = @id');
 
       const ingredientDetails = ingredientDetailsResult.recordset;
 
@@ -397,25 +395,34 @@ app.post('/api/meals', async (req, res) => {
 });
 
 // 2d. Finde et måltid og se dens ingredienser og vægt
-
+// ENDPOINT VIRKER
+// Test i Insomnia ved at skrive: http://localhost:PORT/api/meals/1 - husk at ændre PORT
 app.get('/api/meals/:id', async (req, res) => {
-  const { mealId } = req.params;
+  const pool = await sql.connect(dbConfig);
+
   try {
+    const { id } = req.params; // Hent værdien af :id parameteren fra req.params
+
     // Hent måltidet og dets basale oplysninger
-    const mealQuery = 'SELECT * FROM meals WHERE id = ?';
-    const mealResults = await db.query(mealQuery, [mealId]);
-    if (mealResults.length === 0) {
+    const mealQuery = 'SELECT * FROM meals WHERE id = @id';
+    const mealResults = await pool.request()
+      .input('id', sql.Int, id) // Tilføjet input-parametrisering
+      .query(mealQuery);
+    if (mealResults.recordset.length === 0) {
       return res.status(404).json({ message: 'Måltid ikke fundet' });
     }
-    const meal = mealResults[0];
+    const meal = mealResults.recordset[0];
     // Hent alle ingredienser tilknyttet dette måltid
-    const ingredientsQuery = 'SELECT fi.name, mfi.weight FROM meal_food_items mfi JOIN food_items fi ON mfi.foodItemId = fi.id WHERE mfi.mealId = ?';
-    const ingredients = await db.query(ingredientsQuery, [mealId]);
+    const ingredientsQuery = 'SELECT fi.name, mfi.weight FROM meal_food_items mfi JOIN food_items fi ON mfi.foodItemId = fi.id WHERE mfi.mealId = @mealId';
+    const ingredientsResults = await pool.request()
+    .input('mealId', sql.Int, id) // Brug 'id' fra req.params
+    .query(ingredientsQuery);
+    const ingredients = ingredientsResults.recordset;
     // Sammensæt det fulde måltid med ingredienser
     res.json({ 
-      id: meal.id, 
+      id: meal.id, // Ændret til meal.id, da du allerede har meal objektet
       name: meal.name, 
-      userId: meal.userId, 
+      userId: meal.userId,
       ingredients 
     });
   } catch (error) {
@@ -423,8 +430,10 @@ app.get('/api/meals/:id', async (req, res) => {
   }
 });
 
+
+
 // 2b Endpoint for at søge efter de rigtige fødevarer
-// ENDPOINT VIRKER
+// ENDPOINT VIRKER, men kommer kun én fødevare frem. Skal ændres så det kan vælges mellem flere.
 // Test i Insomnia ved at skrive: http://localhost:PORT/api/ingredients/search?searchString=apple - husk at ændre PORT
 app.get('/api/ingredients/search', async (req, res) => {
   const { searchString } = req.query;
@@ -441,7 +450,8 @@ app.get('/api/ingredients/search', async (req, res) => {
 });
 
 
-/* Søgefunktion e. Det skal være muligt at finde information om hver enkelt fødevare i datasættet samt dets samlede ernæringsindhold*/
+/* Søgefunktion e. Det skal være muligt at finde information om hver enkelt 
+fødevare i datasættet samt dets samlede ernæringsindhold*/
 // Endpoint for at hente næringsværdier baseret på foodID og sortKey
 // ENDPOINT VIRKER
 // Test ved http://localhost:2800/nutrient-value/'foodItemId'/'sortKey' (f.eks. 1/1110)
@@ -460,12 +470,13 @@ app.get('/nutrient-value/:foodID/:sortKey', async (req, res) => {
   }
 });
 
+
+
 // 3f. OBS - HØRER FAKTISK TIL MEAL TRACKER Slet et måltid samt mulighed for at redigere
 // MANGLER MULIGHED FOR AT REDIGERE MÅLTID
-// IKKE FÆRDIG
 app.delete('/api/meals/:id', async (req, res) => {
-  const { mealId } = req.params; // ID for måltidet der skal slettes
-  const query = 'DELETE FROM meals WHERE id = ?';
+  const { id } = req.params; // ID for måltidet der skal slettes
+  const query = 'DELETE FROM meals WHERE id = @id';
 
   const pool = await sql.connect(dbConfig);
   try {
@@ -479,8 +490,6 @@ app.delete('/api/meals/:id', async (req, res) => {
     res.status(500).json({ message: 'Fejl ved sletning af måltid', error: error.message });
   }
 });
-
-
 
 
 
