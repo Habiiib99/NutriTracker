@@ -18,7 +18,7 @@ GO
 
 CREATE TABLE dbo.ingredients (
     ingredientId INT PRIMARY KEY NOT NULL,
-    name VARCHAR NOT NULL,
+    ingredient VARCHAR NOT NULL,
     kcal DECIMAL NOT NULL,
     protein DECIMAL NOT NULL,
     fat DECIMAL NOT NULL,
@@ -38,7 +38,7 @@ CREATE TABLE dbo.profiles (
 
 CREATE TABLE dbo.meals (
     mealId INT PRIMARY KEY NOT NULL,
-    name VARCHAR NOT NULL,
+    mealName VARCHAR NOT NULL,
     userId INT NOT NULL,
     kcal DECIMAL,
     protein DECIMAL,
