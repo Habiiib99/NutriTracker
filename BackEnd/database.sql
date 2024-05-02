@@ -1,3 +1,11 @@
+-- Dropping existing tables if they exist
+DROP TABLE IF EXISTS dbo.meals;
+DROP TABLE IF EXISTS dbo.profiles;
+DROP TABLE IF EXISTS dbo.tracker;
+DROP TABLE IF EXISTS dbo.activities;
+DROP TABLE IF EXISTS dbo.ingredients;
+
+
 -- Create the database if it doesn't already exist
 IF NOT EXISTS(SELECT * FROM sys.databases WHERE name = 'NutriTracker')
 BEGIN
