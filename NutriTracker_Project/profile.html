@@ -1,0 +1,22 @@
+<head>
+  <title>Profile</title>
+  <link rel="stylesheet" type="text/css" href="styles.css" />
+</head>
+<body>
+  <div class="profile-container">
+    <h1>Profile</h1>
+    <button id="update-button">Update</button>
+    <button id="logout-button">Logout</button>
+    <button id="delete-button">Delete</button>
+    <form id="profile-form">
+      <input type="text" id="name" placeholder="Name" required />
+      <span id="email"></span>
+      <input type="number" id="weight" placeholder="Weight" required />
+      <input type="number" id="age" placeholder="Age" required />
+      <select id="gender" required>
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+      </form>
+    </div>
+  <script src="profile.js"></script>
+</body>

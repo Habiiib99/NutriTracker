@@ -1,0 +1,25 @@
+<head>
+  <title>Register</title>
+  <link rel="stylesheet" type="text/css" href="styles.css" />
+</head>
+
+<body>
+  <div class="register-container">
+    <h1>Register</h1>
+    <form id="register-form" onsubmit="submitRegistration">
+      <input type="text" id="name" placeholder="Navn" required />
+      <input type="text" id="email" placeholder="Email" required />
+      <select type="number" id="gender" placeholder="Køn" required>
+        <option value="male">Mand</option>
+        <option value="female">Kvinde</option>
+      </select>
+      <input type="number" id="age" placeholder="Alder" required />
+      <input type="number" id="weight" placeholder="Vægt" required />
+      <input type="password" id="password" placeholder="Adgangskode" required />
+    </form>
+    <button id="register-button">Register</button>
+    <span>Har du allerede en konto?</span>
+    <button id="redirect-to-login-button">Login</button>
+  </div>
+  <script src="register.js"></script>
+</body>
