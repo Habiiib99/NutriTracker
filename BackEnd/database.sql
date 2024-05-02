@@ -17,7 +17,7 @@ USE NutriTracker;
 GO
 
 CREATE TABLE dbo.ingredients (
-    id INT PRIMARY KEY NOT NULL,
+    ingredientId INT PRIMARY KEY NOT NULL,
     name VARCHAR NOT NULL,
     kcal DECIMAL NOT NULL,
     protein DECIMAL NOT NULL,
@@ -60,12 +60,13 @@ CREATE TABLE dbo.tracker (
 
 
 CREATE TABLE dbo.activities (
-    id INT PRIMARY KEY NOT NULL,
+    activityId INT PRIMARY KEY NOT NULL,
     userId INT NOT NULL,
     activityType VARCHAR NOT NULL,
     duration DECIMAL NOT NULL,
     caloriesBurned DECIMAL NOT NULL,
     activityDate DATETIME NOT NULL,
+    activityName VARCHAR (100) NOT NULL, 
     FOREIGN KEY (userId) REFERENCES dbo.profiles(userId)
 );
 -- add activity name?
