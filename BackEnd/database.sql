@@ -60,6 +60,7 @@ CREATE TABLE dbo.activities (
     activityDate DATETIME NOT NULL,
     FOREIGN KEY (userId) REFERENCES dbo.profiles(userId)
 );
+-- add activity name?
 
 
 -- Geolokation 
