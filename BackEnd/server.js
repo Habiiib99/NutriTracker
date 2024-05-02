@@ -166,7 +166,7 @@ function calculateBMR(weight, age, gender) {
     }
   }
 
-  return bmr 
+  return bmr
 
 }
 
@@ -176,16 +176,16 @@ app.use(express.json());
 
 app.post('/api/users', async (req, res) => {
   const { name, age, gender, weight, email, password } = req.body;
-  
+
   // Beregner BMR
   const bmr = calculateBMR(weight, age, gender);
-  
+
   try {
     // Forbinder til databasen
     const pool = await sql.connect(dbConfig);
     // Hasher brugerens password
     const hashedPassword = await bcrypt.hash(password, 10);
-    
+
     // Udfører SQL query med parameterized inputs
     const result = await pool.request()
       .input('name', sql.VarChar, name)
@@ -196,11 +196,11 @@ app.post('/api/users', async (req, res) => {
       .input('password', sql.VarChar, hashedPassword)
       .input('bmr', sql.Decimal(10, 4), bmr)
       .query('INSERT INTO profiles (name, age, gender, weight, bmr, email, password) OUTPUT INSERTED.id VALUES (@name, @age, @gender, @weight, @bmr, @email, @password)');
-      
-      // Genererer en JWT for den nye bruger
+
+    // Genererer en JWT for den nye bruger
     const newUser = { id: result.recordset[0].id, name, age, gender, weight, email };
     const token = jwt.sign({ userId: newUser.id }, 'test', { expiresIn: '1h' });
-    
+
     // Sender det nye brugerobjekt og token tilbage som respons
     res.status(201).json({ newUser, token });
   } catch (error) {
@@ -243,8 +243,8 @@ app.put('/api/users/:userId', async (req, res) => {
   const { name, age, gender, weight } = req.body;
   const userId = req.params.userId;
 
-   // Beregner ny BMR
-   const bmr = calculateBMR(weight, age, gender);
+  // Beregner ny BMR
+  const bmr = calculateBMR(weight, age, gender);
 
   try {
     const pool = await sql.connect(dbConfig); // sikre at forbindelsen er aktiv
@@ -318,22 +318,22 @@ app.post('/api/auth/login', async (req, res) => {
 I azure fremgår måltidet derfor, men med weight = null.:
 Test i Insomnia ved at skrive:
 {
-	"name": "mad",
-	"userId": 2,
-	"ingredients": [
-		{
-			"foodItemId": 187,
-			"weight": 100 
-		},
-		{
-			"foodItemId": 5,
-			"weight": 150
-		},
-		{
-			"foodItemId": 3,
-			"weight": 50
-		}
-	]
+  "name": "mad",
+  "userId": 2,
+  "ingredients": [
+    {
+      "foodItemId": 187,
+      "weight": 100 
+    },
+    {
+      "foodItemId": 5,
+      "weight": 150
+    },
+    {
+      "foodItemId": 3,
+      "weight": 50
+    }
+  ]
 }*/
 app.post('/api/meals', async (req, res) => {
   const { mealName, userId, ingredients } = req.body; // Ingredienser som et array af objekter { foodItemId }
@@ -347,15 +347,15 @@ app.post('/api/meals', async (req, res) => {
     const pool = await sql.connect(dbConfig);
 
     const mealResult = await pool.request()
-    .input('mealName', sql.VarChar, mealName)
-    .input('userId', sql.Int, userId)
-    .query('INSERT INTO meals (mealName, userId) OUTPUT INSERTED.id VALUES (@mealName, @userId)');
+      .input('mealName', sql.VarChar, mealName)
+      .input('userId', sql.Int, userId)
+      .query('INSERT INTO meals (mealName, userId) OUTPUT INSERTED.id VALUES (@mealName, @userId)');
     const mealId = mealResult.recordset[0].insertId;
 
     for (const ingredient of ingredients) {
       const ingredientDetailsResult = await pool.request()
-    .input('id', sql.Int, ingredient.ingredientId)
-    .query('SELECT kcal, protein, fat, fiber FROM food_items WHERE ingredientId = @ingredientId');
+        .input('id', sql.Int, ingredient.ingredientId)
+        .query('SELECT kcal, protein, fat, fiber FROM food_items WHERE ingredientId = @ingredientId');
 
       const ingredientDetails = ingredientDetailsResult.recordset;
 
@@ -370,23 +370,23 @@ app.post('/api/meals', async (req, res) => {
         totalFiber += fiber * factor;
       }
 
-    // Indsæt ingrediens i måltidet    
-    const insertIngredientResult = await pool.request()
-    .input('mealId', sql.Int, mealId)
-    .input('ingredientId', sql.Int, ingredient.ingredientId)
-    .input('weight', sql.Decimal(5, 2), ingredient.weight)
-    .query('INSERT INTO meals (mealId, ingredientId, weight) VALUES (@mealId, @ingredientId, @weight)'); 
+      // Indsæt ingrediens i måltidet    
+      const insertIngredientResult = await pool.request()
+        .input('mealId', sql.Int, mealId)
+        .input('ingredientId', sql.Int, ingredient.ingredientId)
+        .input('weight', sql.Decimal(5, 2), ingredient.weight)
+        .query('INSERT INTO meals (mealId, ingredientId, weight) VALUES (@mealId, @ingredientId, @weight)');
     }
 
     // Gem total næringsdata i måltidet
     const saveMealResult = await pool.request()
-    .input('totalEnergy', sql.Decimal(5, 2), totalEnergy)
-    .input('totalProtein', sql.Decimal(5, 2), totalProtein)
-    .input('totalFat', sql.Decimal(5, 2), totalFat)
-    .input('totalFiber', sql.Decimal(5, 2), totalFiber)
-    .input('mealId', sql.Int, mealId)
-    .query('UPDATE meals SET totalEnergy = @totalEnergy, totalProtein = @totalProtein, totalFat = @totalFat, totalFiber = @totalFiber WHERE id = @mealId');
-    
+      .input('totalEnergy', sql.Decimal(5, 2), totalEnergy)
+      .input('totalProtein', sql.Decimal(5, 2), totalProtein)
+      .input('totalFat', sql.Decimal(5, 2), totalFat)
+      .input('totalFiber', sql.Decimal(5, 2), totalFiber)
+      .input('mealId', sql.Int, mealId)
+      .query('UPDATE meals SET totalEnergy = @totalEnergy, totalProtein = @totalProtein, totalFat = @totalFat, totalFiber = @totalFiber WHERE id = @mealId');
+
     // Send respons med det nye måltid
     res.status(201).json({ id: mealId, name, userId, ingredients, totalEnergy, totalProtein, totalFat, totalFiber });
   } catch (error) {
@@ -415,15 +415,15 @@ app.get('/api/meals/:id', async (req, res) => {
     // Hent alle ingredienser tilknyttet dette måltid
     const ingredientsQuery = 'SELECT fi.name, mfi.weight FROM meal_food_items mfi JOIN food_items fi ON mfi.foodItemId = fi.id WHERE mfi.mealId = @mealId';
     const ingredientsResults = await pool.request()
-    .input('mealId', sql.Int, id) // Brug 'id' fra req.params
-    .query(ingredientsQuery);
+      .input('mealId', sql.Int, id) // Brug 'id' fra req.params
+      .query(ingredientsQuery);
     const ingredients = ingredientsResults.recordset;
     // Sammensæt det fulde måltid med ingredienser
-    res.json({ 
+    res.json({
       id: meal.mealId,
-      name: meal.mealName, 
+      name: meal.mealName,
       userId: meal.userId,
-      ingredients 
+      ingredients
     });
   } catch (error) {
     res.status(500).json({ message: 'Server fejl', error: error.message });
@@ -520,7 +520,7 @@ app.get('/api/meal-tracker/intake/:userId', async (req, res) => {
 app.post('/api/meal-tracker/track-ingredient', async (req, res) => {
   // Automatisk tildeling af nuværende dato og tid.
   const intakeDate = new Date();
-  
+
   // Lokationen antages at blive sendt med i request body.
   // Hvis ikke, skal du tilføje logik for at bestemme lokationen her.
   const { foodItemId, userId, weight, location } = req.body;
@@ -529,7 +529,7 @@ app.post('/api/meal-tracker/track-ingredient', async (req, res) => {
       'INSERT INTO intakes (foodItemId, userId, intakeDate, weight, location) VALUES (?, ?, ?, ?, ?)',
       [foodItemId, userId, intakeDate, weight, location]
     );
-    
+
     res.status(201).json({
       id: result.insertId,
       foodItemId,
@@ -595,112 +595,112 @@ app.delete('/api/meal-tracker/intake/:intakeId', async (req, res) => {
 
 // **ACTIVITY TRACKER** => 
 const almindeligeHverdagsaktiviteter = {
-    "Almindelig gang": 215,
-    "Gang ned af trapper": 414,
-    "Gang op af trapper": 1079,
-    "Slå græs med manuel græsslåmaskine": 281,
-    "Lave mad og redde senge": 236,
-    "Luge ukrudt": 362,
-    "Rydde sne": 481,
-    "Læse eller se TV": 74,
-    "Stå oprejst": 89,
-    "Cykling i roligt tempo": 310,
-    "Tørre støv af": 163,
-    "Vaske gulv": 281,
-    "Pudse vinduer": 259
+  "Almindelig gang": 215,
+  "Gang ned af trapper": 414,
+  "Gang op af trapper": 1079,
+  "Slå græs med manuel græsslåmaskine": 281,
+  "Lave mad og redde senge": 236,
+  "Luge ukrudt": 362,
+  "Rydde sne": 481,
+  "Læse eller se TV": 74,
+  "Stå oprejst": 89,
+  "Cykling i roligt tempo": 310,
+  "Tørre støv af": 163,
+  "Vaske gulv": 281,
+  "Pudse vinduer": 259
 };
 
 const sportsAktiviteter = {
-    "Cardio": 814,
-    "Hård styrketræning": 348,
-    "Badminton": 318,
-    "Volleyball": 318,
-    "Bordtennis": 236,
-    "Dans i højt tempo": 355,
-    "Dans i moderat tempo": 259,
-    "Fodbold": 510,
-    "Rask gang": 384,
-    "Golf": 244,
-    "Håndbold": 466,
-    "Squash": 466,
-    "Jogging": 666,
-    "Langrend": 405,
-    "Løb i moderat tempo": 872,
-    "Løb i hurtigt tempo": 1213,
-    "Ridning": 414,
-    "Skøjteløb": 273,
-    "Svømning": 296,
-    "Cykling i højt tempo": 658
+  "Cardio": 814,
+  "Hård styrketræning": 348,
+  "Badminton": 318,
+  "Volleyball": 318,
+  "Bordtennis": 236,
+  "Dans i højt tempo": 355,
+  "Dans i moderat tempo": 259,
+  "Fodbold": 510,
+  "Rask gang": 384,
+  "Golf": 244,
+  "Håndbold": 466,
+  "Squash": 466,
+  "Jogging": 666,
+  "Langrend": 405,
+  "Løb i moderat tempo": 872,
+  "Løb i hurtigt tempo": 1213,
+  "Ridning": 414,
+  "Skøjteløb": 273,
+  "Svømning": 296,
+  "Cykling i højt tempo": 658
 };
 
 const forskelligeTyperArbejde = {
-    "Bilreparation": 259,
-    "Gravearbejde": 414,
-    "Landbrugsarbejde": 236,
-    "Let kontorarbejde": 185,
-    "Male hus": 215,
-    "Murerarbejde": 207,
-    "Hugge og slæbe på brænde": 1168
+  "Bilreparation": 259,
+  "Gravearbejde": 414,
+  "Landbrugsarbejde": 236,
+  "Let kontorarbejde": 185,
+  "Male hus": 215,
+  "Murerarbejde": 207,
+  "Hugge og slæbe på brænde": 1168
 };
 
 
 // Endpoint for at tilføje en aktivitet (OBS: ændre denne funktions dato til kun indtil minutter, ikke sekunder)
 app.post('/activityTracker', async (req, res) => {
-    try {
-        const { userId, activityType, minutes, activityDate } = req.body;
+  try {
+    const { userId, activityType, minutes, activityDate } = req.body;
 
-        // Aktiviteter baseret på type
-        const activities = {
-            everyday: almindeligeHverdagsaktiviteter,
-            sports: sportsAktiviteter,
-            work: forskelligeTyperArbejde
-        };
+    // Aktiviteter baseret på type
+    const activities = {
+      everyday: almindeligeHverdagsaktiviteter,
+      sports: sportsAktiviteter,
+      work: forskelligeTyperArbejde
+    };
 
-        // Hent den relevante liste af aktiviteter baseret på typen
-        const activityList = activities[activityType];
+    // Hent den relevante liste af aktiviteter baseret på typen
+    const activityList = activities[activityType];
 
-        // Søg efter den specificerede aktivitet
-        const activityName = req.body.activityName;
-        const caloriesPerHour = activityList[activityName];
+    // Søg efter den specificerede aktivitet
+    const activityName = req.body.activityName;
+    const caloriesPerHour = activityList[activityName];
 
-        // Beregn kalorier
-        if (!activityName || isNaN(minutes) || caloriesPerHour === undefined) {
-            return res.status(400).send("Indtast venligst både aktivitet og antal minutter.");
-        }
-
-        const calories = (caloriesPerHour * minutes) / 60;
-
-        // Forbinder til databasen
-        const pool = await sql.connect(dbConfig);
-
-        // Indsæt aktivitet i databasen
-        const result = await pool.request()
-            .input('userId', sql.Int, userId)
-            .input('activityType', sql.VarChar, activityType)
-            .input('activityName', sql.VarChar, activityName)
-            .input('duration', sql.Decimal(5, 2), parseFloat(minutes))
-            .input('caloriesBurned', sql.Decimal(10, 2), parseFloat(calories))
-            .input('activityDate', sql.DateTime, new Date(activityDate))
-            .query('INSERT INTO activities (userId, activityType, activityName, duration, caloriesBurned, activityDate) OUTPUT INSERTED.id VALUES (@userId, @activityType, @activityName, @duration, @caloriesBurned, @activityDate)');
-
-        // Tjek om aktiviteten blev indsat succesfuldt
-        if (result.recordset.length > 0) {
-            res.status(201).json({
-                id: result.recordset[0].id,
-                userId,
-                activityType,
-                activityName,
-                duration: minutes,
-                caloriesBurned: calories,
-                activityDate
-            });
-        } else {
-            res.status(500).json({ message: 'Fejl ved tilføjelse af aktivitet til database.' });
-        }
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Fejl ved oprettelse af aktivitet.', error: error.message });
+    // Beregn kalorier
+    if (!activityName || isNaN(minutes) || caloriesPerHour === undefined) {
+      return res.status(400).send("Indtast venligst både aktivitet og antal minutter.");
     }
+
+    const calories = (caloriesPerHour * minutes) / 60;
+
+    // Forbinder til databasen
+    const pool = await sql.connect(dbConfig);
+
+    // Indsæt aktivitet i databasen
+    const result = await pool.request()
+      .input('userId', sql.Int, userId)
+      .input('activityType', sql.VarChar, activityType)
+      .input('activityName', sql.VarChar, activityName)
+      .input('duration', sql.Decimal(5, 2), parseFloat(minutes))
+      .input('caloriesBurned', sql.Decimal(10, 2), parseFloat(calories))
+      .input('activityDate', sql.DateTime, new Date(activityDate))
+      .query('INSERT INTO activities (userId, activityType, activityName, duration, caloriesBurned, activityDate) OUTPUT INSERTED.id VALUES (@userId, @activityType, @activityName, @duration, @caloriesBurned, @activityDate)');
+
+    // Tjek om aktiviteten blev indsat succesfuldt
+    if (result.recordset.length > 0) {
+      res.status(201).json({
+        id: result.recordset[0].id,
+        userId,
+        activityType,
+        activityName,
+        duration: minutes,
+        caloriesBurned: calories,
+        activityDate
+      });
+    } else {
+      res.status(500).json({ message: 'Fejl ved tilføjelse af aktivitet til database.' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Fejl ved oprettelse af aktivitet.', error: error.message });
+  }
 });
 
 //Funktion til at tracke aktiviteter og beregne kalorier
