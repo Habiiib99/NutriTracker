@@ -336,7 +336,7 @@ Test i Insomnia ved at skrive:
 	]
 }*/
 app.post('/api/meals', async (req, res) => {
-  const { name, userId, ingredients } = req.body; // Ingredienser som et array af objekter { foodItemId }
+  const { mealName, userId, ingredients } = req.body; // Ingredienser som et array af objekter { foodItemId }
   try {
     let totalEnergy = 0;
     let totalProtein = 0;
@@ -347,15 +347,15 @@ app.post('/api/meals', async (req, res) => {
     const pool = await sql.connect(dbConfig);
 
     const mealResult = await pool.request()
-    .input('name', sql.VarChar, name)
+    .input('mealName', sql.VarChar, mealName)
     .input('userId', sql.Int, userId)
-    .query('INSERT INTO meals (name, userId) OUTPUT INSERTED.id VALUES (@name, @userId)');
+    .query('INSERT INTO meals (mealName, userId) OUTPUT INSERTED.id VALUES (@mealName, @userId)');
     const mealId = mealResult.recordset[0].insertId;
 
     for (const ingredient of ingredients) {
       const ingredientDetailsResult = await pool.request()
-    .input('id', sql.Int, ingredient.id)
-    .query('SELECT kcal, protein, fat, fiber FROM food_items WHERE id = @id');
+    .input('id', sql.Int, ingredient.ingredientId)
+    .query('SELECT kcal, protein, fat, fiber FROM food_items WHERE ingredientId = @ingredientId');
 
       const ingredientDetails = ingredientDetailsResult.recordset;
 
@@ -373,9 +373,9 @@ app.post('/api/meals', async (req, res) => {
     // Indsæt ingrediens i måltidet    
     const insertIngredientResult = await pool.request()
     .input('mealId', sql.Int, mealId)
-    .input('foodItemId', sql.Int, ingredient.foodItemId)
+    .input('ingredientId', sql.Int, ingredient.ingredientId)
     .input('weight', sql.Decimal(5, 2), ingredient.weight)
-    .query('INSERT INTO meal_food_items (mealId, foodItemId, weight) VALUES (@mealId, @foodItemId, @weight)'); 
+    .query('INSERT INTO meals (mealId, ingredientId, weight) VALUES (@mealId, @ingredientId, @weight)'); 
     }
 
     // Gem total næringsdata i måltidet
@@ -404,9 +404,9 @@ app.get('/api/meals/:id', async (req, res) => {
     const { id } = req.params; // Hent værdien af :id parameteren fra req.params
 
     // Hent måltidet og dets basale oplysninger
-    const mealQuery = 'SELECT * FROM meals WHERE id = @id';
+    const mealQuery = 'SELECT * FROM meals WHERE mealId = @mealId';
     const mealResults = await pool.request()
-      .input('id', sql.Int, id) // Tilføjet input-parametrisering
+      .input('mealId', sql.Int, mealId) // Tilføjet input-parametrisering
       .query(mealQuery);
     if (mealResults.recordset.length === 0) {
       return res.status(404).json({ message: 'Måltid ikke fundet' });
@@ -420,8 +420,8 @@ app.get('/api/meals/:id', async (req, res) => {
     const ingredients = ingredientsResults.recordset;
     // Sammensæt det fulde måltid med ingredienser
     res.json({ 
-      id: meal.id, // Ændret til meal.id, da du allerede har meal objektet
-      name: meal.name, 
+      id: meal.mealId,
+      name: meal.mealName, 
       userId: meal.userId,
       ingredients 
     });
@@ -454,12 +454,12 @@ app.get('/api/ingredients/search', async (req, res) => {
 fødevare i datasættet samt dets samlede ernæringsindhold*/
 // Endpoint for at hente næringsværdier baseret på foodID og sortKey
 // ENDPOINT VIRKER
-// Test ved http://localhost:2800/nutrient-value/'foodItemId'/'sortKey' (f.eks. 1/1110)
+// Test ved http://localhost:2800/nutrient-value/'ingredientId'/'sortKey' (f.eks. 1/1110)
 
 // MANGLER: mulighed for at finde det samlede ernæringsindhold, måske det er noget front end? Altså at alle sortKeys bliver hentet.
-app.get('/nutrient-value/:foodID/:sortKey', async (req, res) => {
+app.get('/nutrient-value/:ingredientId/:sortKey', async (req, res) => {
   try {
-    const nutrientValue = await fetchNutrientValue(req.params.foodID, req.params.sortKey);
+    const nutrientValue = await fetchNutrientValue(req.params.ingredientId, req.params.sortKey);
     if (nutrientValue) {
       res.json({ nutrientValue });
     } else {
@@ -476,7 +476,7 @@ app.get('/nutrient-value/:foodID/:sortKey', async (req, res) => {
 // MANGLER MULIGHED FOR AT REDIGERE MÅLTID
 app.delete('/api/meals/:id', async (req, res) => {
   const { id } = req.params; // ID for måltidet der skal slettes
-  const query = 'DELETE FROM meals WHERE id = @id';
+  const query = 'DELETE FROM meals WHERE mealId = @mealId';
 
   const pool = await sql.connect(dbConfig);
   try {
