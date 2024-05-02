@@ -72,9 +72,3 @@ CREATE TABLE dbo.activities (
     activityName VARCHAR (100) NOT NULL, 
     FOREIGN KEY (userId) REFERENCES dbo.profiles(userId)
 );
--- add activity name?
-
-
--- Geolokation 
-ALTER TABLE meal_food_items ADD latitude DECIMAL(9,6), longitude DECIMAL(9,6);
-
