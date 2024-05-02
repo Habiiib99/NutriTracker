@@ -8,54 +8,49 @@ GO
 USE NutriTracker;
 GO
 
-CREATE TABLE food_items (
-  id INT PRIMARY KEY IDENTITY(1,1),
-  name VARCHAR(255),
-  kcal DECIMAL NOT NULL,
-  protein DECIMAL NOT NULL,
-  fat DECIMAL NOT NULL,
-  carbohydrates DECIMAL NOT NULL, -- Added carbohydrates (remember to delete from azure!!!)
-  fiber DECIMAL NOT NULL
+CREATE TABLE dbo.ingredients (
+    id INT PRIMARY KEY NOT NULL,
+    name VARCHAR NOT NULL,
+    kcal DECIMAL NOT NULL,
+    protein DECIMAL NOT NULL,
+    fat DECIMAL NOT NULL,
+    fiber DECIMAL NOT NULL
 );
 
-CREATE TABLE profiles (
-  id INT PRIMARY KEY IDENTITY(1,1),
-  name VARCHAR(255) NOT NULL,
-  age INT NOT NULL,
-  gender VARCHAR(50) NOT NULL, -- Changed from VARCHAR(255) for gender as it's typically shorter
-  weight DECIMAL NOT NULL,
-  email VARCHAR(255) NOT NULL, -- Added email
-  password VARCHAR(255) NOT NULL -- Added password
-  -- HUSK AT TILFØJE BMR!!!
+CREATE TABLE dbo.profiles (
+    userId INT PRIMARY KEY NOT NULL,
+    name VARCHAR NOT NULL,
+    age INT NOT NULL,
+    gender VARCHAR NOT NULL,
+    weight DECIMAL NOT NULL,
+    email VARCHAR NOT NULL,
+    password VARCHAR NOT NULL,
+    bmr DECIMAL NOT NULL
 );
 
-CREATE TABLE meals (
-  id INT PRIMARY KEY IDENTITY(1,1),
-  name VARCHAR(255) NOT NULL,
-  userId INT NOT NULL,
-  FOREIGN KEY (userId) REFERENCES profiles(id) -- Added foreign key relationship
+CREATE TABLE dbo.meals (
+    mealId INT PRIMARY KEY NOT NULL,
+    name VARCHAR NOT NULL,
+    userId INT NOT NULL,
+    kcal DECIMAL,
+    protein DECIMAL,
+    fat DECIMAL,
+    fiber DECIMAL,
+    ingredients VARCHAR,
+    ingredientId INT,
+    FOREIGN KEY (userId) REFERENCES dbo.profiles(userId)
 );
--- Tilføj til Azure Meals:
--- alter table [dbo].[meals]
 -- add weight decimal(5,2) null;
--- Tror ikke weight skal tilføjes til meals her, for så fremgår det som vægten på hele måltidet og ikke ingredienser, når måltidet skal tilføjes
 
-CREATE TABLE meal_food_items (
-  mealId INT NOT NULL, -- Renamed for clarity
-  foodItemId INT NOT NULL, -- Renamed for clarity
-  PRIMARY KEY (mealId, foodItemId),
-  FOREIGN KEY (mealId) REFERENCES meals(id),
-  FOREIGN KEY (foodItemId) REFERENCES food_items(id)
-);
 
-CREATE TABLE activities (
-  id INT PRIMARY KEY IDENTITY(1,1),
-  userId INT NOT NULL,
-  activityType VARCHAR(255) NOT NULL,
-  duration DECIMAL NOT NULL,
-  caloriesBurned DECIMAL NOT NULL,
-  activityDate DATETIME NOT NULL,
-  FOREIGN KEY (userId) REFERENCES profiles(id)
+CREATE TABLE dbo.activities (
+    id INT PRIMARY KEY NOT NULL,
+    userId INT NOT NULL,
+    activityType VARCHAR NOT NULL,
+    duration DECIMAL NOT NULL,
+    caloriesBurned DECIMAL NOT NULL,
+    activityDate DATETIME NOT NULL,
+    FOREIGN KEY (userId) REFERENCES dbo.profiles(userId)
 );
 
 
