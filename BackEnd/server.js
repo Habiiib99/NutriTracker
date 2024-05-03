@@ -1,10 +1,28 @@
 import express from 'express';
 import fetch from 'node-fetch';
+import cors from 'cors';
 
 const app = express();
 const port = 2220;
 const apiKey = '169792';
 app.use(express.json());
+
+// CORS options (så min lokale server godtager den/ dette ændres?)
+const corsOptions = {
+  origin: 'http://127.0.0.1:5500',  // Tillad anmodninger fra denne oprindelse
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',  // Tilladte HTTP metoder
+  allowedHeaders: 'Content-Type, Authorization',  // Tilladte headers
+  credentials: true  // Tillad cookies/session across domains
+};
+// Anvend CORS med de specificerede indstillinger
+app.use(cors(corsOptions));
+
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'POST, PUT, GET, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  next();
+});
 
 
 // importere mysql
@@ -13,7 +31,7 @@ const dbConfig = {
   user: 'Habib',
   password: 'Dhdh2399!',
   server: 'servertesthabib.database.windows.net',
-  database: 'test',
+  database: 'NutriTracker1',
   options: {
     encrypt: true, // for Azure
     trustServerCertificate: false // nødvendig for lokal udvikling, ikke nødvendig for Azure
@@ -174,136 +192,90 @@ import bcrypt from 'bcrypt';
 // Husk at bruge middleware for at parse JSON body
 app.use(express.json());
 
-app.post('/api/users', async (req, res) => {
-  const { name, age, gender, weight, email, password } = req.body;
-  
-  // Beregner BMR
-  const bmr = calculateBMR(weight, age, gender);
-  
+
+app.post('/register', async (req, res) => {
+  const { name, password, age, weight, gender, email } = req.body;
+  console.log(req.body)
   try {
-    // Forbinder til databasen
     const pool = await sql.connect(dbConfig);
-    // Hasher brugerens password
-    const hashedPassword = await bcrypt.hash(password, 10);
-    
-    // Udfører SQL query med parameterized inputs
+    const user = await pool.request()
+      .input('email', sql.VarChar, email)
+      .query('SELECT userId FROM profiles WHERE email = @email');
+
+    if (user.recordset.length !== 0) {
+      console.log(user.recordset.length)
+      return res.status(400).json({ message: 'En bruger med den email eksisterer allerede' });
+    }
+
     const result = await pool.request()
+      .input('userId', sql.Int, user.recordset.length + 1)
       .input('name', sql.VarChar, name)
       .input('age', sql.Int, age)
       .input('gender', sql.VarChar, gender)
       .input('weight', sql.Decimal(5, 2), weight)
       .input('email', sql.VarChar, email)
-      .input('password', sql.VarChar, hashedPassword)
-      .input('bmr', sql.Decimal(10, 4), bmr)
-      .query('INSERT INTO profiles (name, age, gender, weight, bmr, email, password) OUTPUT INSERTED.id VALUES (@name, @age, @gender, @weight, @bmr, @email, @password)');
-      
-      // Genererer en JWT for den nye bruger
-    const newUser = { id: result.recordset[0].id, name, age, gender, weight, email };
-    const token = jwt.sign({ userId: newUser.id }, 'test', { expiresIn: '1h' });
-    
-    // Sender det nye brugerobjekt og token tilbage som respons
-    res.status(201).json({ newUser, token });
+      .input('password', sql.VarChar, password)
+      .input('bmr', sql.Decimal(5, 4), calculateBMR(weight, age, gender))
+      .query(
+        'INSERT INTO profiles VALUES (@userId, @name, @age, @gender, @weight, @email, @password, @bmr)',
+      ).catch((error) => { console.error(error) })
+
+    res.status(201).json({ message: 'Bruger oprettet', id: result.insertId })
+
   } catch (error) {
-    // Logger fejlen og sender en fejlmeddelelse tilbage til klienten
-    console.error(error);
-    res.status(500).json({ message: 'Fejl ved oprettelse af bruger', error: error.message });
+    console.error(error)
+    res.status(500).json({ message: 'Serverfejl ved forsøg på registrering', error: error.message });
   }
-});
+})
 
-
-
-// Antag at dbConfig er vores database konfiguration som vist tidligere
-sql.connect(dbConfig).then(pool => {
-  // Nu kan du bruge pool i resten af din applikation
-  app.delete('/api/users/:userId', async (req, res) => {
-    const userId = req.params.userId;
-
-    try {
-      const result = await pool.request()
-        .input('userId', sql.Int, userId)
-        .query('DELETE FROM profiles WHERE id = @userId');
-
-      if (result.rowsAffected[0] > 0) {
-        res.json({ message: 'Bruger slettet' });
-      } else {
-        res.status(404).json({ message: 'Bruger ikke fundet' });
-      }
-    } catch (error) {
-      res.status(500).json({ message: 'Server fejl', error: error.message });
-    }
-  });
-
-}).catch(err => {
-  console.error('Fejl ved forbindelse til databasen:', err);
-});
-
-
-// Opdaterer brugeroplysninger
-app.put('/api/users/:userId', async (req, res) => {
-  const { name, age, gender, weight } = req.body;
-  const userId = req.params.userId;
-
-   // Beregner ny BMR
-   const bmr = calculateBMR(weight, age, gender);
-
-  try {
-    const pool = await sql.connect(dbConfig); // sikre at forbindelsen er aktiv
-
-    const result = await pool.request()
-      .input('userId', sql.Int, userId)
-      .input('name', sql.VarChar, name)
-      .input('age', sql.Int, age)
-      .input('gender', sql.VarChar, gender)
-      .input('weight', sql.Decimal(5, 2), weight)
-      .input('bmr', sql.Decimal(10, 4), bmr)
-      .query('UPDATE profiles SET name = @name, age = @age, gender = @gender, weight = @weight, bmr = @bmr WHERE id = @userId');
-
-
-    if (result.rowsAffected[0] > 0) {
-      res.json({ message: 'Bruger opdateret', id: userId, name, age, gender, weight });
-    } else {
-      res.status(404).json({ message: 'Bruger ikke fundet' });
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server fejl', error: error.message });
-  }
-});
-
-
-// Logik for at logge en bruger ind (**opdateres med evt frontend**)
-import jwt from 'jsonwebtoken';
-
-app.post('/api/auth/login', async (req, res) => {
+app.post('/login', async (req, res) => {
   const { email, password } = req.body;
+  console.log(req.body)
 
   try {
-    // Simulerer en brugersøgning i databasen
-    const user = await db.query('SELECT id, password FROM profiles WHERE email = ?', [email]);
-    if (user.length === 0) {
-      return res.status(401).json({ message: 'Ugyldig email eller adgangskode' });
+    const pool = await sql.connect(dbConfig);
+    const user = await pool.request()
+      .input('email', sql.VarChar, email)
+      .query('SELECT userId, name, age, gender, weight, email, password, bmr FROM profiles WHERE email = @email');
+
+    if (user.recordset.length === 0) {
+      console.log(user.recordset.length)
+      return res.status(404).json({ message: 'Ugyldig email' });
+    }
+    console.log(user.recordset)
+    if (user.recordset[0].password != password) {
+      return res.status(401).json({ message: 'Ugyldigt password' });
     }
 
-    // Sammenlign det indtastede password med det hashede password i databasen
-    const isMatch = await bcrypt.compare(password, user[0].password);
+    delete user.recordset[0].password
+    res.status(200).json({ message: 'Login succesfuldt', user: user.recordset[0] })
 
-    // Hvis passwords matcher, generer en JWT
-    if (isMatch) {
-      const token = jwt.sign(
-        { userId: user[0].id },
-        'your_static_secret_here',  // Statisk 'hemmelighed'
-        { expiresIn: '1h' }
-      );
-
-      // Send token tilbage til brugeren
-      res.json({ token });
-    } else {
-      res.status(401).json({ message: 'Ugyldig email eller adgangskode' });
-    }
   } catch (error) {
     console.error('Error during login:', error);
     res.status(500).json({ message: 'Serverfejl ved forsøg på login', error: error.message });
   }
+});
+
+app.delete('/delete/:userId', async (req, res) => {
+  console.log(req.params)
+  const { userId } = req.params
+
+  const pool = await sql.connect(dbConfig)
+
+  pool.request().input('userId', sql.Int, userId)
+    .query('DELETE FROM meals WHERE userId = @userId').then(() => {
+
+      pool
+        .request()
+        .input('userId', sql.Int, userId)
+        .query('DELETE FROM profiles WHERE userId = @userId').then((result) => {
+          return res.status(201).json({ message: 'Bruger slettet' })
+        }).catch((error) => {
+          return res.status(500).json({
+            message: 'Serverfejl ved forsøg på sletning af bruger', error: error,
+          })
+        })
+    })
 });
 
 
@@ -345,17 +317,19 @@ app.post('/api/meals', async (req, res) => {
 
     // Bruger pool til at oprette en forbindelse til databasen - men kun til at oprette måltidet så ikke hele databasen. (Mere effektivt)
     const pool = await sql.connect(dbConfig);
+    const meals = await pool.query('SELECT * FROM meals')
 
     const mealResult = await pool.request()
-    .input('mealName', sql.VarChar, mealName)
-    .input('userId', sql.Int, userId)
-    .query('INSERT INTO meals (mealName, userId) OUTPUT INSERTED.id VALUES (@mealName, @userId)');
+      .input('mealId', sql.Int, meals.recordset.length + 1)
+      .input('mealName', sql.VarChar, mealName)
+      .input('userId', sql.Int, userId)
+      .query('INSERT INTO meals (mealId, mealName, userId) OUTPUT INSERTED.mealId VALUES (@mealId, @mealName, @userId)');
     const mealId = mealResult.recordset[0].insertId;
 
     for (const ingredient of ingredients) {
       const ingredientDetailsResult = await pool.request()
-    .input('id', sql.Int, ingredient.ingredientId)
-    .query('SELECT kcal, protein, fat, fiber FROM food_items WHERE ingredientId = @ingredientId');
+        .input('ingredientId', sql.Int, ingredient.ingredientId)
+        .query('SELECT kcal, protein, fat, fiber FROM ingredients WHERE ingredientId = @ingredientId');
 
       const ingredientDetails = ingredientDetailsResult.recordset;
 
@@ -370,29 +344,25 @@ app.post('/api/meals', async (req, res) => {
         totalFiber += fiber * factor;
       }
 
-    // Indsæt ingrediens i måltidet    
-    const insertIngredientResult = await pool.request()
-    .input('mealId', sql.Int, mealId)
-    .input('ingredientId', sql.Int, ingredient.ingredientId)
-    .input('weight', sql.Decimal(5, 2), ingredient.weight)
-    .query('INSERT INTO meals (mealId, ingredientId, weight) VALUES (@mealId, @ingredientId, @weight)'); 
-    }
+      // Indsæt ingrediens i måltidet    
+      const insertIngredientResult = await pool.request()
+        .input('kcal', sql.Decimal(5, 2), totalEnergy)
+        .input('protein', sql.Decimal(5, 2), totalProtein)
+        .input('fat', sql.Decimal(5, 2), totalFat)
+        .input('userId', sql.Int, userId)
+        .input('fiber', sql.Decimal(5, 2), totalFiber)
+        .input('mealId', sql.Int, meals.recordset.length + 1)
+        .input('mealName', sql.VarChar, mealName)
+        .input('ingredients', sql.VarChar, JSON.stringify(ingredients))
+        .query('INSERT INTO meals VALUES (@mealId, @mealName, @userId, @kcal, @protein, @fat, @fiber, @ingredients)')
 
-    // Gem total næringsdata i måltidet
-    const saveMealResult = await pool.request()
-    .input('totalEnergy', sql.Decimal(5, 2), totalEnergy)
-    .input('totalProtein', sql.Decimal(5, 2), totalProtein)
-    .input('totalFat', sql.Decimal(5, 2), totalFat)
-    .input('totalFiber', sql.Decimal(5, 2), totalFiber)
-    .input('mealId', sql.Int, mealId)
-    .query('UPDATE meals SET totalEnergy = @totalEnergy, totalProtein = @totalProtein, totalFat = @totalFat, totalFiber = @totalFiber WHERE id = @mealId');
-    
-    // Send respons med det nye måltid
-    res.status(201).json({ id: mealId, name, userId, ingredients, totalEnergy, totalProtein, totalFat, totalFiber });
+    }
+    res.status(201).json({ mealId: meals.recordset.length + 1, mealName, userId, ingredients, totalEnergy, totalProtein, totalFat, totalFiber });
   } catch (error) {
     res.status(500).json({ message: 'Fejl ved oprettelse af måltid', error: error.message });
   }
 });
+
 
 // 2d. Finde et måltid og se dens ingredienser og vægt
 // ENDPOINT VIRKER
@@ -415,15 +385,15 @@ app.get('/api/meals/:id', async (req, res) => {
     // Hent alle ingredienser tilknyttet dette måltid
     const ingredientsQuery = 'SELECT fi.name, mfi.weight FROM meal_food_items mfi JOIN food_items fi ON mfi.foodItemId = fi.id WHERE mfi.mealId = @mealId';
     const ingredientsResults = await pool.request()
-    .input('mealId', sql.Int, id) // Brug 'id' fra req.params
-    .query(ingredientsQuery);
+      .input('mealId', sql.Int, id) // Brug 'id' fra req.params
+      .query(ingredientsQuery);
     const ingredients = ingredientsResults.recordset;
     // Sammensæt det fulde måltid med ingredienser
-    res.json({ 
+    res.json({
       id: meal.mealId,
-      name: meal.mealName, 
+      name: meal.mealName,
       userId: meal.userId,
-      ingredients 
+      ingredients
     });
   } catch (error) {
     res.status(500).json({ message: 'Server fejl', error: error.message });
