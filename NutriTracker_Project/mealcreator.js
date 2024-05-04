@@ -266,20 +266,43 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function saveMeal(meal) {
-        const user = JSON.parse(localStorage.getItem('user'))
+        const user = JSON.parse(localStorage.getItem('user'));
+        meal.totalNutrients = meal.calculateTotalNutrients();
         let body = {
             mealName: meal.name,
-            ingredients: meal.ingredients,
-            userId: user.userId
-        }
+            userId: user.userId,
+            kcal: meal.totalNutrients.kcal,
+            protein: meal.totalNutrients.protein,
+            fat: meal.totalNutrients.fat,
+            fiber: meal.totalNutrients.fiber,
+            ingredients: meal.ingredients.map(ing => ({
+                ingredientId: ing.foodID,
+                weight: ing.quantity
+            }))
+        };
 
-        await fetch('http://localhost:2220/api/meals', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-        }).then(response => {
-        }).then(response => { response.json() }).then((data) => { })
+        console.log('Body:', body);
+    
+        try {
+            const response = await fetch('http://localhost:2220/api/meals', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+    
+            const data = await response.json();
+            if (response.ok) {
+                alert('Måltid oprettet!');
+                resetMealCreator();
+            } else {
+                throw new Error(data.message);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Fejl ved oprettelse af måltid.');
+        }
     }
+    
 
     // Når måltid er blevet oprettet, nulstilles siden
     function resetMealCreator() {
