@@ -321,36 +321,15 @@ app.delete('/delete/:userId', async (req, res) => {
 
 
 // **MEAL CREATOR**
-// 2a. Oprette et eller flere måltider, som skal bestå af 1 eller flere ingredienser
-// ENDPOINT VIRKER, men ikke med weight.
-/* Indsætter dette i Insomnia (url http://localhost:PORT/api/meals), men får fejl i weight.
-I azure fremgår måltidet derfor, men med weight = null.:
-Test i Insomnia ved at skrive:
-{
-	"name": "mad",
-	"userId": 2,
-	"ingredients": [
-		{
-			"foodItemId": 187,
-			"weight": 100 
-		},
-		{
-			"foodItemId": 5,
-			"weight": 150
-		},
-		{
-			"foodItemId": 3,
-			"weight": 50
-		}
-	]
-}*/
+// Endpoint for at oprette et måltid
 app.post('/api/meals', async (req, res) => {
   const { mealName, userId, ingredients } = req.body; // Ingredienser som et array af objekter { foodItemId }
+  console.log(req.body)
   try {
-    let totalEnergy = 0;
-    let totalProtein = 0;
-    let totalFat = 0;
-    let totalFiber = 0;
+    let totalEnergy = req.body.kcal;
+    let totalProtein = req.body.protein;
+    let totalFat = req.body.fat;
+    let totalFiber = req.body.fiber;
 
     // Bruger pool til at oprette en forbindelse til databasen - men kun til at oprette måltidet så ikke hele databasen. (Mere effektivt)
     const pool = await sql.connect(dbConfig);
@@ -374,11 +353,11 @@ app.post('/api/meals', async (req, res) => {
         const { kcal, protein, fat, fiber } = ingredientDetails[0];
 
         // 2c. Beregn bidrag fra hver ingrediens baseret på vægten
-        const factor = ingredient.weight / 100; // Antager, at næringsdata er pr. 100 gram
+        /*const factor = ingredient.weight / 100; // Antager, at næringsdata er pr. 100 gram
         totalEnergy += kcal * factor;
         totalProtein += protein * factor;
         totalFat += fat * factor;
-        totalFiber += fiber * factor;
+        totalFiber += fiber * factor;*/
       }
 
       // Indsæt ingrediens i måltidet    
@@ -391,17 +370,18 @@ app.post('/api/meals', async (req, res) => {
         .input('mealId', sql.Int, meals.recordset.length + 1)
         .input('mealName', sql.VarChar, mealName)
         .input('ingredients', sql.VarChar, JSON.stringify(ingredients))
-        .query('INSERT INTO meals VALUES (@mealId, @mealName, @userId, @kcal, @protein, @fat, @fiber, @ingredients)')
+        .query('update meals set kcal = @kcal, protein = @protein, fat= @fat, fiber= @fiber, ingredients= @ingredients where mealId = @mealId')
 
     }
     res.status(201).json({ mealId: meals.recordset.length + 1, mealName, userId, ingredients, totalEnergy, totalProtein, totalFat, totalFiber });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: 'Fejl ved oprettelse af måltid', error: error.message });
   }
 });
 
 
-// 2d. Finde et måltid og se dens ingredienser og vægt
+// Finde et måltid og se dens ingredienser og vægt
 // ENDPOINT VIRKER
 // Test i Insomnia ved at skrive: http://localhost:PORT/api/meals/1 - husk at ændre PORT
 app.get('/api/meals/:id', async (req, res) => {
@@ -439,64 +419,7 @@ app.get('/api/meals/:id', async (req, res) => {
 
 
 
-// 2b Endpoint for at søge efter de rigtige fødevarer
-// ENDPOINT VIRKER, men kommer kun én fødevare frem. Skal ændres så det kan vælges mellem flere.
-// Test i Insomnia ved at skrive: http://localhost:PORT/api/ingredients/search?searchString=apple - husk at ændre PORT
-app.get('/api/ingredients/search', async (req, res) => {
-  const { searchString } = req.query;
-  try {
-    const foodID = await fetchFoodID(searchString);
-    if (foodID) {
-      res.json({ foodID });
-    } else {
-      res.status(404).json({ message: 'Fødevare ikke fundet' });
-    }
-  } catch (error) {
-    res.status(500).json({ message: 'Server fejl', error });
-  }
-});
 
-
-/* Søgefunktion e. Det skal være muligt at finde information om hver enkelt 
-fødevare i datasættet samt dets samlede ernæringsindhold*/
-// Endpoint for at hente næringsværdier baseret på foodID og sortKey
-// ENDPOINT VIRKER
-// Test ved http://localhost:2800/nutrient-value/'ingredientId'/'sortKey' (f.eks. 1/1110)
-
-// MANGLER: mulighed for at finde det samlede ernæringsindhold, måske det er noget front end? Altså at alle sortKeys bliver hentet.
-app.get('/nutrient-value/:ingredientId/:sortKey', async (req, res) => {
-  try {
-    const nutrientValue = await fetchNutrientValue(req.params.ingredientId, req.params.sortKey);
-    if (nutrientValue) {
-      res.json({ nutrientValue });
-    } else {
-      res.status(404).json({ message: 'Næringsværdi ikke fundet' });
-    }
-  } catch (error) {
-    res.status(500).json({ message: 'Server fejl', error });
-  }
-});
-
-
-
-// 3f. OBS - HØRER FAKTISK TIL MEAL TRACKER Slet et måltid samt mulighed for at redigere
-// MANGLER MULIGHED FOR AT REDIGERE MÅLTID
-app.delete('/api/meals/:id', async (req, res) => {
-  const { id } = req.params; // ID for måltidet der skal slettes
-  const query = 'DELETE FROM meals WHERE mealId = @mealId';
-
-  const pool = await sql.connect(dbConfig);
-  try {
-    const result = await pool.request(query, [mealId]);
-    if (result.affectedRows) {
-      res.json({ message: 'Måltid slettet' });
-    } else {
-      res.status(404).json({ message: 'Måltid ikke fundet' });
-    }
-  } catch (error) {
-    res.status(500).json({ message: 'Fejl ved sletning af måltid', error: error.message });
-  }
-});
 
 
 
@@ -592,6 +515,7 @@ app.delete('/api/meal-tracker/intake/:intakeId', async (req, res) => {
     res.status(500).json({ message: 'Fejl ved sletning af næringsindtag', error: error.message });
   }
 });
+
 
 
 
