@@ -25,14 +25,14 @@ CREATE TABLE dbo.ingredients (
     fiber DECIMAL NOT NULL
 );
 
-CREATE TABLE dbo.profiles (
-    userId INT PRIMARY KEY NOT NULL,
-    name VARCHAR NOT NULL,
+CREATE TABLE dbo.profiles ( -- userId er opdateret 
+    userId INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
+    name VARCHAR(255) NOT NULL,
     age INT NOT NULL,
-    gender VARCHAR NOT NULL,
+    gender VARCHAR(255) NOT NULL,
     weight DECIMAL NOT NULL,
-    email VARCHAR NOT NULL,
-    password VARCHAR NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NOT NULL,
     bmr DECIMAL NOT NULL
 );
 
