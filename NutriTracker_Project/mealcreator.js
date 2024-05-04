@@ -52,6 +52,32 @@ class Meal {
     }
 }
 
+async function fetchFoodItems(input) {
+    const searchString = input.charAt(0).toUpperCase() + input.slice(1);
+    const url = `https://nutrimonapi.azurewebsites.net/api/FoodItems/BySearch/${searchString}`;
+
+    try {
+        let response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'content-type': 'application/json',
+                'X-API-Key': apiKey,
+            },
+        });
+
+        if (response.ok) {
+            let result = await response.json();
+            return result
+        } else {
+            console.error('Failed to fetch data. Status:', response.status);
+            return null;
+        }
+    } catch (error) {
+        console.error('Error fetching data:', error);
+        return null;
+    }
+}
+
 // Funktion til at hente fødevare
 async function fetchFoodItem(ingredientName) {
     // Henter fødevare baseret på foodID
@@ -146,13 +172,41 @@ function updateIngredientCount() {
     document.getElementById('ingredient-count').textContent = count;
 }
 
+function populateIngredientList(results) {
+    const ingredientList = document.getElementById('ingredient-list');
+    // Clear previous results
+    ingredientList.innerHTML = ''
+
+    for (const result of results) {
+        const option = document.createElement('option')
+        option.value = result.foodName
+        option.text = result.foodName
+
+        ingredientList.appendChild(option)
+    }
+}
+
 // Sørger for DOM er indlæst
 document.addEventListener('DOMContentLoaded', () => {
     const mealForm = document.getElementById('meal-creator-form');
     const addIngredientBtn = document.getElementById('add-ingredient-btn');
     const ingredientsTableBody = document.getElementById('ingredientsTable').getElementsByTagName('tbody')[0];
     const mealNameInput = document.getElementById('meal-name');
-   
+    const ingredientNameInput = document.getElementById('ingredient-name');
+
+
+    ingredientNameInput.addEventListener('keypress', async (event) => {
+        const results = await fetchFoodItems(event.target.value)
+        if (!results) {
+            console.log('No results')
+            return
+        }
+
+        populateIngredientList(results)
+
+
+    })
+
 
     // Når der klikkes på "tilføj ingrediens" knappen
     addIngredientBtn.addEventListener('click', async () => {
@@ -211,11 +265,20 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('total-fiber').textContent = totalNutrients.fiber.toFixed(2);
     }
 
-    // Gemmer måltid i localStorage
-    function saveMeal(meal) {
-        const meals = JSON.parse(localStorage.getItem('meals')) || [];
-        meals.push(meal);
-        localStorage.setItem('meals', JSON.stringify(meals));
+    async function saveMeal(meal) {
+        const user = JSON.parse(localStorage.getItem('user'))
+        let body = {
+            mealName: meal.name,
+            ingredients: meal.ingredients,
+            userId: user.userId
+        }
+
+        await fetch('http://localhost:2220/api/meals', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        }).then(response => {
+        }).then(response => { response.json() }).then((data) => { })
     }
 
     // Når måltid er blevet oprettet, nulstilles siden
@@ -235,5 +298,5 @@ document.addEventListener('DOMContentLoaded', () => {
         updateIngredientsTable();
         updateNutritionalSummary();
         updateIngredientCount(); // Opdater antallet af ingredienser
-    };
-});
+    }
+})

@@ -1,59 +1,84 @@
 <!DOCTYPE html>
 <html lang="da">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Meal Creator</title>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-        <!-- Navigationsbar med links til forskellige sider og logo -->
-        <nav class="navbar">
-            <img src="Billede2.png" alt="NutriTracker Logo" class="navbar-logo">
-            <!-- Hver <a> tag repræsenterer et link til en anden side -->
-            <a href="dashboard.html">Dashboard</a>
-            <a href="mealcreator.html" class="active">Meal Creator</a>
-            <a href="mealtracker.html">Meal Tracker</a>
-            <a href="nutriReport.html">Nutri Report</a>
-            <a href="food-inspector.html">Food Inspector</a>
-        </nav>
-        
-    <main class="meal-creator-container">
-        <h1>Meal Creator</h1> <!--Overskift-->
-        <p>Antal ingredienser: <span id="ingredient-count">0</span></p>
-        <form id="meal-creator-form" class="meal-form">
-            <input type="text" id="meal-name" placeholder="Navn på måltid" required>
-            <input type="text" id="ingredient-name" placeholder="Ingrediensnavn">
-            <input type="number" id="ingredient-quantity" placeholder="Mængde (g)" min="1">
-            <button type="button" id="add-ingredient-btn" class="add-ingredient-btn">Tilføj Ingrediens</button>
-            <button type="submit" class="create-meal-btn">Opret Måltid</button>
-            
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- Navigationsbar med links til forskellige sider og logo -->
+    <nav class="navbar">
+      <img src="Billede2.png" alt="NutriTracker Logo" class="navbar-logo" />
+      <!-- Hver <a> tag repræsenterer et link til en anden side -->
+      <a href="dashboard.html">Dashboard</a>
+      <a href="mealcreator.html" class="active">Meal Creator</a>
+      <a href="mealtracker.html">Meal Tracker</a>
+      <a href="nutriReport.html">Nutri Report</a>
+      <a href="food-inspector.html">Food Inspector</a>
+      <a href="profile.html">Profile</a>
+    </nav>
 
-        </form>
-        <table id="ingredientsTable">
-            <thead>
-                <tr>
-                    <th>Ingrediens</th>
-                    <th>Food ID</th>
-                    <th>Mængde (g)</th>
-                    <th>Handling</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Ingredienser vil blive tilføjet her -->
-            </tbody>
-        </table>
-        <div id="nutritional-summary">
-            <h3>Næringsopsummering</h3>
-            <p>Total Energi: <span id="total-kcal">0</span> kcal</p>
-            <p>Total Protein: <span id="total-protein">0</span> g</p>
-            <p>Total Fedt: <span id="total-fat">0</span> g</p>
-            <p>Total Fiber: <span id="total-fiber">0</span> g</p>
-        </div>
+    <main class="meal-creator-container">
+      <h1>Meal Creator</h1>
+      <!--Overskift-->
+      <p>Antal ingredienser: <span id="ingredient-count">0</span></p>
+      <form id="meal-creator-form" class="meal-form">
+        <input
+          type="text"
+          id="meal-name"
+          placeholder="Navn på måltid"
+          required
+        />
+        <input
+          autocomplete="off"
+          list="ingredient-list"
+          id="ingredient-name"
+          placeholder="Ingrediensnavn"
+        />
+        <datalist id="ingredient-list"> </datalist>
+        <input
+          type="number"
+          id="ingredient-quantity"
+          placeholder="Mængde (g)"
+          min="1"
+        />
+        <button
+          type="button"
+          id="add-ingredient-btn"
+          class="add-ingredient-btn"
+        >
+          Tilføj Ingrediens
+        </button>
+        <button type="submit" class="create-meal-btn">Opret Måltid</button>
+      </form>
+      <table id="ingredientsTable">
+        <thead>
+          <tr>
+            <th>Ingrediens</th>
+            <th>Food ID</th>
+            <th>Mængde (g)</th>
+            <th>Handling</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Ingredienser vil blive tilføjet her -->
+        </tbody>
+      </table>
+      <div id="nutritional-summary">
+        <h3>Næringsopsummering</h3>
+        <p>Total Energi: <span id="total-kcal">0</span> kcal</p>
+        <p>Total Protein: <span id="total-protein">0</span> g</p>
+        <p>Total Fedt: <span id="total-fat">0</span> g</p>
+        <p>Total Fiber: <span id="total-fiber">0</span> g</p>
+      </div>
     </main>
 
     <!-- Link til JavaScript-filen-->
     <script src="mealcreator.js"></script>
-</body>
+  </body>
 </html>
