@@ -18,14 +18,14 @@ GO
 
 CREATE TABLE dbo.ingredients (
     ingredientId INT PRIMARY KEY NOT NULL,
-    ingredient VARCHAR NOT NULL,
+    ingredient VARCHAR(255) NOT NULL,
     kcal DECIMAL NOT NULL,
     protein DECIMAL NOT NULL,
     fat DECIMAL NOT NULL,
     fiber DECIMAL NOT NULL
 );
 
-CREATE TABLE dbo.profiles ( -- userId er opdateret 
+CREATE TABLE dbo.profiles (
     userId INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
     name VARCHAR(255) NOT NULL,
     age INT NOT NULL,
@@ -38,14 +38,13 @@ CREATE TABLE dbo.profiles ( -- userId er opdateret
 
 CREATE TABLE dbo.meals (
     mealId INT PRIMARY KEY NOT NULL,
-    mealName VARCHAR NOT NULL,
+    mealName VARCHAR(255) NOT NULL,
     userId INT NOT NULL,
     kcal DECIMAL,
     protein DECIMAL,
     fat DECIMAL,
     fiber DECIMAL,
-    ingredients VARCHAR,
-    ingredientId INT,
+    ingredients VARCHAR(255),
     FOREIGN KEY (userId) REFERENCES dbo.profiles(userId)
 );
 -- add weight decimal(5,2) null;
@@ -56,19 +55,19 @@ CREATE TABLE dbo.tracker (
     weight DECIMAL NOT NULL,
     userId INT NOT NULL,
     consumptionDate DATETIME NOT NULL DEFAULT GETDATE(),
-    location VARCHAR NOT NULL, -- Consider storing as JSON or separate latitude and longitude fields
+    location VARCHAR(255) NOT NULL, -- Consider storing as JSON or separate latitude and longitude fields
     FOREIGN KEY (mealId) REFERENCES dbo.meals(mealId),
     FOREIGN KEY (userId) REFERENCES dbo.profiles(userId)
 );
 
 
 CREATE TABLE dbo.activities (
-    activityId INT PRIMARY KEY NOT NULL,
+    activityId INT PRIMARY KEY IDENTITY(1,1) NOT NULL,
     userId INT NOT NULL,
-    activityType VARCHAR NOT NULL,
+    activityType VARCHAR(255) NOT NULL,
     duration DECIMAL NOT NULL,
     caloriesBurned DECIMAL NOT NULL,
     activityDate DATETIME NOT NULL,
-    activityName VARCHAR (100) NOT NULL, 
+    activityName VARCHAR(255) NOT NULL, 
     FOREIGN KEY (userId) REFERENCES dbo.profiles(userId)
 );
