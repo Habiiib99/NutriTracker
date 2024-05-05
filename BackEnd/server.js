@@ -576,16 +576,8 @@ app.put('/api/meal-tracker/intake/:intakeId', async (req, res) => {
 
 
 
+//activityTracker
 
-
-
-
-
-
-
-//Man skal tilføje en ny attribute "activityName" til activities tabellen i databasen før at den virker
-
-// **ACTIVITY TRACKER** => 
 const almindeligeHverdagsaktiviteter = {
     "Almindelig gang": 215,
     "Gang ned af trapper": 414,
@@ -639,7 +631,7 @@ const forskelligeTyperArbejde = {
 // Endpoint for at tilføje en aktivitet (OBS: ændre denne funktions dato til kun indtil minutter, ikke sekunder)
 app.post('/activityTracker', async (req, res) => {
     try {
-        const { userId, activityType, minutes, activityDate } = req.body;
+        const { userId, activityType, minutes,} = req.body;
 
         // Aktiviteter baseret på type
         const activities = {
@@ -654,6 +646,9 @@ app.post('/activityTracker', async (req, res) => {
         // Søg efter den specificerede aktivitet
         const activityName = req.body.activityName;
         const caloriesPerHour = activityList[activityName];
+
+        const date = new Date().toISOString();
+        const activityDate = date.slice(0, 16);
 
         // Beregn kalorier
         if (!activityName || isNaN(minutes) || caloriesPerHour === undefined) {
@@ -673,12 +668,12 @@ app.post('/activityTracker', async (req, res) => {
             .input('duration', sql.Decimal(5, 2), parseFloat(minutes))
             .input('caloriesBurned', sql.Decimal(10, 2), parseFloat(calories))
             .input('activityDate', sql.DateTime, new Date(activityDate))
-            .query('INSERT INTO activities (userId, activityType, activityName, duration, caloriesBurned, activityDate) OUTPUT INSERTED.id VALUES (@userId, @activityType, @activityName, @duration, @caloriesBurned, @activityDate)');
+            .query('INSERT INTO activities (userId, activityType, activityName, duration, caloriesBurned, activityDate) OUTPUT INSERTED.userId VALUES (@userId, @activityType, @activityName, @duration, @caloriesBurned, @activityDate)');
 
         // Tjek om aktiviteten blev indsat succesfuldt
         if (result.recordset.length > 0) {
             res.status(201).json({
-                id: result.recordset[0].id,
+                activityId: result.recordset[0].id,
                 userId,
                 activityType,
                 activityName,
@@ -695,111 +690,9 @@ app.post('/activityTracker', async (req, res) => {
     }
 });
 
-//Funktion til at tracke aktiviteter og beregne kalorier
-/*
-// Definition af objekter for forskellige typer aktiviteter
 
 
-// Referencer til HTML-elementer
-const activityTypeSelect = document.getElementById("activityType");
-const activityNameSelect = document.getElementById("activityName");
-const minutesInput = document.getElementById("minutes");
 
-// Funktion til at udfylde aktivitetsdropdown-menuen baseret på den valgte type
-activityTypeSelect.addEventListener("change", function() {
-    const selectedType = this.value;
-    let activities;
-    if (selectedType === "everyday") {
-        activities = almindeligeHverdagsaktiviteter;
-    } else if (selectedType === "sports") {
-        activities = sportsAktiviteter;
-    } else if (selectedType === "work") {
-        activities = forskelligeTyperArbejde;
-    }
-    populateActivityDropdown(activities);
-});
-
-// Funktion til at udfylde aktivitetsdropdown-menuen
-function populateActivityDropdown(activities) {
-    activityNameSelect.innerHTML = "";
-    for (const activity in activities) {
-        const option = document.createElement("option");
-        option.value = activity;
-        option.textContent = activity;
-        activityNameSelect.appendChild(option);
-    }
-}
-
-// Kald populateActivityDropdown() initialt for at udfylde dropdown-menuen
-populateActivityDropdown(almindeligeHverdagsaktiviteter);
-
-function calculateCalories() {
-    const selectedActivity = activityNameSelect.value;
-    const minutes = parseInt(minutesInput.value);
-    const caloriesPerHour = activityTypeSelect.value === "everyday" ? almindeligeHverdagsaktiviteter[selectedActivity] :
-                            activityTypeSelect.value === "sports" ? sportsAktiviteter[selectedActivity] :
-                            activityTypeSelect.value === "work" ? forskelligeTyperArbejde[selectedActivity] : null;
-    if (!selectedActivity || isNaN(minutes) || caloriesPerHour === null) {
-        console.log("Indtast venligst både aktivitet og antal minutter.");
-        return;
-    }
-    const calories = (caloriesPerHour * minutes) / 60;
-    console.log(`Kalorier forbrændt: ${calories}`);
-}
-*/
-
-// registrere en aktivitet (OBS: ændre denne funktions dato til kun indtil minutter, ikke sekunder)
-
-/*
-
-
-// Referencer til HTML-elementer
-const activityTypeSelect = document.getElementById("activityType");
-const activityNameSelect = document.getElementById("activityName");
-const minutesInput = document.getElementById("minutes");
-
-// Funktion til at udfylde aktivitetsdropdown-menuen baseret på den valgte type
-activityTypeSelect.addEventListener("change", function() {
-    const selectedType = this.value;
-    let activities;
-    if (selectedType === "everyday") {
-        activities = almindeligeHverdagsaktiviteter;
-    } else if (selectedType === "sports") {
-        activities = sportsAktiviteter;
-    } else if (selectedType === "work") {
-        activities = forskelligeTyperArbejde;
-    }
-    populateActivityDropdown(activities);
-});
-
-// Funktion til at udfylde aktivitetsdropdown-menuen
-function populateActivityDropdown(activities) {
-    activityNameSelect.innerHTML = "";
-    for (const activity in activities) {
-        const option = document.createElement("option");
-        option.value = activity;
-        option.textContent = activity;
-        activityNameSelect.appendChild(option);
-    }
-}
-
-// Kald populateActivityDropdown() initialt for at udfylde dropdown-menuen
-populateActivityDropdown(almindeligeHverdagsaktiviteter);
-
-function calculateCalories() {
-    const selectedActivity = activityNameSelect.value;
-    const minutes = parseInt(minutesInput.value);
-    const caloriesPerHour = activityTypeSelect.value === "everyday" ? almindeligeHverdagsaktiviteter[selectedActivity] :
-                            activityTypeSelect.value === "sports" ? sportsAktiviteter[selectedActivity] :
-                            activityTypeSelect.value === "work" ? forskelligeTyperArbejde[selectedActivity] : null;
-    if (!selectedActivity || isNaN(minutes) || caloriesPerHour === null) {
-        console.log("Indtast venligst både aktivitet og antal minutter.");
-        return;
-    }
-    const calories = (caloriesPerHour * minutes) / 60;
-    console.log(`Kalorier forbrændt: ${calories}`);
-}
-*/
 
 
 
