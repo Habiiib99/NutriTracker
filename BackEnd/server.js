@@ -574,7 +574,7 @@ app.put('/api/meal-tracker/intake/:intakeId', async (req, res) => {
   }
 });
 
-/ Endpoint til at registrere vandindtag
+// Endpoint til at registrere vandindtag
 app.post('/api/water-tracker', async (req, res) => {
   try {
       const { userId, amountOfWater, dateAndTimeOfDrinking } = req.body;
