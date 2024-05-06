@@ -80,3 +80,13 @@ CREATE TABLE dbo.meal_ingredients (
     FOREIGN KEY (ingredientId) REFERENCES dbo.ingredients(ingredientId),
     FOREIGN KEY (userId) REFERENCES dbo.profiles(userId) -- Define foreign key constraint
 );
+
+
+CREATE TABLE dbo.waterRegistration (
+    waterRegId INT IDENTITY(1,1) PRIMARY KEY,  -- Unik identifikator
+    userId INT NOT NULL,  -- Reference til brugeren
+    amountOfWater INT NOT NULL,  -- Mængde vand i ml
+    dateAndTimeOfDrinking DATETIME NOT NULL,  -- Tidspunkt for vandindtaget
+    FOREIGN KEY (userId) REFERENCES dbo.profiles(userId) ON DELETE CASCADE  -- Sletning kaskaderer til vandregistreringer
+);
+
