@@ -49,7 +49,7 @@ async function registerMeal() {
   const weight = document.getElementById('meal-weight').value;
   const user = JSON.parse(localStorage.getItem('user'));
   const userId = user?.userId;
-  const consumptionDate = document.getElementById('meal-time').value || new Date().toISOString(); // Brug dato/tid fra input eller nuværende tid
+  const consumptionDate = new Date().toISOString().slice(0, 16).replace('T', ' ');
   let location = 'Unknown';
 
   // Kontroller, at alle nødvendige data er til stede
