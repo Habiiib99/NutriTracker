@@ -17,7 +17,7 @@ USE NutriTracker;
 GO
 
 CREATE TABLE dbo.ingredients (
-    ingredientId INT PRIMARY KEY NOT NULL,
+    ingredientId INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
     ingredient VARCHAR(255) NOT NULL,
     kcal DECIMAL NOT NULL,
     protein DECIMAL NOT NULL,
