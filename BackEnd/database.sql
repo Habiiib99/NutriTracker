@@ -37,7 +37,7 @@ CREATE TABLE dbo.profiles (
 );
 
 CREATE TABLE dbo.meals (
-    mealId INT PRIMARY KEY NOT NULL,
+    mealId INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
     mealName VARCHAR(255) NOT NULL,
     userId INT NOT NULL,
     kcal DECIMAL,
