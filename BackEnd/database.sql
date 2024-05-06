@@ -71,3 +71,12 @@ CREATE TABLE dbo.activities (
     activityName VARCHAR(255) NOT NULL, 
     FOREIGN KEY (userId) REFERENCES dbo.profiles(userId)
 );
+
+CREATE TABLE dbo.meal_ingredients (
+    mealIngredientId INT PRIMARY KEY IDENTITY(1,1) NOT NULL,
+    ingredientId INT NOT NULL,
+    weightOfIngredient DECIMAL NOT NULL,
+    userId INT NOT NULL, -- Add userId column
+    FOREIGN KEY (ingredientId) REFERENCES dbo.ingredients(ingredientId),
+    FOREIGN KEY (userId) REFERENCES dbo.profiles(userId) -- Define foreign key constraint
+);
