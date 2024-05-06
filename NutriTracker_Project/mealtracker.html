@@ -13,7 +13,7 @@
         <img src="Billede2.png" alt="NutriTracker Logo" class="navbar-logo">
         <a href="mealcreator.html">Meal Creator</a>
         <a href="mealtracker.html" class="active">Meal Tracker</a>
-        <a href="nutriReport.html">Nutri Report</a>
+        <a href="dailyNutri.html">Daily Nutri</a>
         <a href="profile.html">Profile</a>
     </nav>
 
@@ -35,10 +35,21 @@
             <button type="submit">Registrér ingrediens</button>
         </form>
 
+        <form id="water-registration-form">
+            <input type="number" id="water-amount" placeholder="Vand (ml)" required>
+            <button type="submit">Registrér vandindtag</button>
+        </form>
+        
+        
+
         <div id="registered-meals">
             <!-- Registered meals will be displayed here -->
         </div>
-
+        
+        <div id="registered-water">
+            <!-- Vandindtagslog vil blive vist her -->
+        </div>
+        
        
     </div>
 
