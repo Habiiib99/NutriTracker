@@ -51,12 +51,14 @@ CREATE TABLE dbo.meals (
 
 CREATE TABLE dbo.tracker (
     trackerId INT PRIMARY KEY IDENTITY(1,1) NOT NULL,
-    mealId INT,
+    mealId INT, -- 
+    mealIngredientId INT, -- 
     weight DECIMAL NOT NULL,
     userId INT NOT NULL,
     consumptionDate DATETIME NOT NULL DEFAULT GETDATE(),
-    location VARCHAR(255) NOT NULL, -- Consider storing as JSON or separate latitude and longitude fields
+    location VARCHAR(255) NOT NULL,
     FOREIGN KEY (mealId) REFERENCES dbo.meals(mealId),
+    FOREIGN KEY (mealIngredientId) REFERENCES dbo.meal_ingredients(mealIngredientId), -- Add foreign key constraint
     FOREIGN KEY (userId) REFERENCES dbo.profiles(userId)
 );
 
