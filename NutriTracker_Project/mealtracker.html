@@ -27,11 +27,10 @@
         </form>
 
         <form id="ingredient-registration-form">
-          <input  list="ingredient-list" type="text" id="ingredient" placeholder="Ingrediens Navn" required>
+          <input  list="ingredient-list" type="text" id="ingredient" placeholder="Ingrediens Navn" autocomplete="off"required>
             <datalist id="ingredient-list"> </datalist>
             <input type="number" id="foodID" placeholder="Food ID" required>
             <input type="number" id="ingredient-weight" placeholder="Vægt (g)" required>
-            <input type="datetime-local" id="ingredient-time" required>
             <button type="submit">Registrér ingrediens</button>
         </form>
 
