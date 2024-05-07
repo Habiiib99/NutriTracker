@@ -1,23 +1,51 @@
+<!DOCTYPE html>
+<html lang="da">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Meal Creator</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+
 <head>
     <title>Profile</title>
     <link rel="stylesheet" type="text/css" href="styles.css" />
   </head>
+
   <body>
+    <!-- Navigationsbar med links til forskellige sider og logo -->
+    <nav class="navbar">
+      <img src="Billede2.png" alt="NutriTracker Logo" class="navbar-logo" />
+      <!-- Hver <a> tag repræsenterer et link til en anden side -->
+      <a href="mealcreator.html">Meal Creator</a>
+      <a href="mealtracker.html">Meal Tracker</a>
+      <a href="Activity.html">Activity Tracker</a>
+      <a href="nutriReport.html">Nutri Report</a>
+      <a href="profile.html" class="active">Profile</a>
+    </nav>
+
+    
     <div class="profile-container">
       <h1>Profile</h1>
-      <button id="update-button">Update</button>
-      <button id="logout-button">Logout</button>
-      <button id="delete-button">Delete</button>
       <form id="profile-form">
-        <input type="text" id="name" placeholder="Name" required />
         <span id="email"></span>
+        <button type="submit" id="update-button">Update</button>
+        <input type="text" id="name" placeholder="Name" required />
         <input type="number" id="weight" placeholder="Weight" required />
         <input type="number" id="age" placeholder="Age" required />
         <input type="number" id="bmr" placeholder="BMR" readonly />
         <select id="gender" required>
           <option value="male">Male</option>
           <option value="female">Female</option>
-        </form>
-      </div>
+        </select>
+      </form>
+      <button id="logout-button">Logout</button>
+      <button id="delete-button">Delete</button>
+    </div>
+    
     <script src="profile.js"></script>
   </body>
+  </html>
