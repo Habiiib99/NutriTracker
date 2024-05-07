@@ -44,32 +44,7 @@ html {
   height: 40px; /* Højde på logoet */
 }
 
-/* Dashboard Container Styles */
-#dashboard-container {
-  max-width: 1200px;
-  margin: 50px auto;
-  padding: 20px;
-  background-color: #f5f5f5;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  display: grid;
-  gap: 20px; /* Afstand fra header*/
-}
 
-.dashboard-header {
-  text-align: left;
-}
-
-/* Dashboard Stats Container Styles */
-#dashboard-stats {
-  display: grid;
-  grid-template-columns: repeat(
-    auto-fit,
-    minmax(200px, 1fr)
-  ); /* Opretter et responsivt antal kolonner */
-  gap: 20px; /*Afstand mellem dem*/
-  justify-content: center; /* Center grid items horizontally if they don't fill the entire row */
-}
 
 /* Stat Block Styles */
 .stat {
@@ -321,49 +296,7 @@ html {
   /* Du kan tilføje specifikke farver og stilarter for hver type data */
 }
 
-/* Container for hele Food Inspector siden */
-.food-inspector-container {
-  max-width: 1200px;
-  margin: 50px auto; /* Centrerer containeren */
-  padding: 20px; /* Indre afstand */
-  background-color: #f5f5f5; /* Hvid baggrund */
-  border-radius: 10px; /* Afrundede hjørner */
-  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); /* Skyggeeffekt */
-}
 
-/* Container for søgefelt og søgeknap */
-.search-container {
-  margin-bottom: 20px; /* Afstand til elementer nedenfor */
-}
-
-/* Stil for søgefelt */
-#food-search {
-  width: 100%; /* Fylder den tilgængelige bredde */
-  padding: 10px; /* Indre afstand */
-  margin-right: 10px; /* Afstand til næste element */
-  border: 1px solid #e0e0e0; /* Grå kant */
-  border-radius: 5px; /* Afrundede hjørner */
-}
-
-/* Stil for søgeknap */
-#search-button {
-  padding: 10px 20px; /* Indre afstand */
-  background-color: #91c789; /* Grøn baggrund */
-  color: white; /* Hvid tekst */
-  border: none; /* Ingen kant */
-  border-radius: 5px; /* Afrundede hjørner */
-  cursor: pointer; /* Cursor ændres til pointer */
-}
-
-/* Stil for container, der viser fødevaredetaljer */
-#food-details {
-  display: grid; /* Bruger CSS Grid til layout */
-  grid-template-columns: 1fr 1fr; /* To kolonner med lige bredde */
-  gap: 20px; /* Afstand mellem kolonner */
-  padding: 20px; /* Indre afstand */
-  background-color: #f5f5f5; /* Lys grå baggrund */
-  border-radius: 5px; /* Afrundede hjørner */
-}
 
 /* Stil for tabel */
 table {
@@ -387,4 +320,230 @@ th {
 /* Tilføjelse af hover-effekt til tabellinjer */
 tbody tr:hover {
   background-color: #f5f5f5;
+}
+
+
+
+
+/* Center the login form */
+.login-container {
+  width: 100%;
+  max-width: 400px; /* Maximum width for the form */
+  margin: 100px auto; /* Centers the form horizontally and vertically */
+  padding: 30px;
+  background-color: #F5F5F5; /* Light grey */
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+  text-align: center;
+}
+
+/* Style for form inputs and buttons */
+#login-form input[type="text"],
+#login-form input[type="password"] {
+  width: 100%; /* Full width of the form */
+  padding: 10px;
+  margin-bottom: 15px; /* Space between inputs */
+  border-radius: 5px;
+  border: 1px solid #9E9E9E; /* Light grey from black scale */
+}
+
+#login-button,
+#redirect-to-register-button {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  background-color: #91C789; /* Primary green color */
+  color: #FFFFFF; /* White */
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+#redirect-to-register-button {
+  background-color: #FFAB40; /* Accent orange from secondary colors */
+}
+
+#login-button:hover {
+  background-color: #81B77E; /* Slightly darker shade of primary green */
+}
+
+#redirect-to-register-button:hover {
+  background-color: #E89A30; /* Slightly darker orange */
+}
+
+
+/* Register form styles */
+.register-container {
+  width: 100%;
+  max-width: 500px;
+  margin: 80px auto; /* Centers horizontally and vertically */
+  padding: 40px;
+  background-color: #F5F5F5; /* Light grey */
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.register-container h1 {
+  color: #424242; /* Dark grey */
+  margin-bottom: 20px;
+}
+
+#register-form input[type="text"],
+#register-form input[type="number"],
+#register-form input[type="password"],
+#register-form select {
+  width: 100%; /* Full width */
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 5px;
+  border: 1px solid #9E9E9E; /* Light grey */
+}
+
+#register-button,
+#redirect-to-login-button {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  background-color: #91C789; /* Primary green color */
+  color: #FFFFFF; /* White */
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+#redirect-to-login-button {
+  background-color: #FFAB40; /* Accent orange from secondary palette */
+}
+
+#register-button:hover {
+  background-color: #81B77E; /* Darker shade of primary green */
+}
+
+#redirect-to-login-button:hover {
+  background-color: #E89A30; /* Darker orange */
+}
+
+.register-container span {
+  margin-right: 10px;
+  font-size: 14px;
+  color: #424242;
+}
+
+
+
+
+/* Profile page styles */
+.profile-container {
+  width: 100%;
+  max-width: 600px;
+  margin: 80px auto; /* Centers horizontally and vertically */
+  padding: 40px;
+  background-color: #F5F5F5; /* Light grey */
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.profile-container h1 {
+  color: #424242; /* Dark grey */
+  margin-bottom: 20px;
+}
+
+#profile-form input[type="text"],
+#profile-form input[type="number"],
+#profile-form select {
+  width: 100%; /* Full width */
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 5px;
+  border: 1px solid #9E9E9E; /* Light grey */
+}
+
+#update-button,
+#logout-button,
+#delete-button {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  background-color: #91C789; /* Primary green */
+  color: #FFFFFF; /* White */
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+#logout-button {
+  background-color: #FFAB40; /* Accent orange */
+}
+
+#delete-button {
+  background-color: #F29A8A; /* Accent red */
+}
+
+#update-button:hover {
+  background-color: #81B77E; /* Darker shade of primary green */
+}
+
+#logout-button:hover {
+  background-color: #E89A30; /* Darker orange */
+}
+
+#delete-button:hover {
+  background-color: #E17979; /* Darker red */
+}
+
+.profile-container span {
+  display: block;
+  font-size: 14px;
+  color: #424242;
+  margin-bottom: 15px;
+}
+
+
+/* Adjusted Activity Container styles */
+.activity-container {
+  width: 100%;
+  max-width: 500px;
+  margin: 80px auto; /* Centers horizontally and vertically */
+  padding: 30px;
+  background-color: #F5F5F5; /* Light grey */
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+  text-align: center;
+}
+
+.activity-container h1 {
+  color: #424242; /* Dark grey */
+  margin-bottom: 30px; /* Adds spacing below the title */
+}
+
+#activity-form label {
+  display: block; /* Makes label take full width */
+  margin-bottom: 10px; /* Adds spacing after the label */
+  text-align: left; /* Aligns text to the left */
+}
+
+#activity-form select,
+#activity-form input[type="number"] {
+  width: 100%;
+  margin-bottom: 20px; /* Increase spacing between form elements */
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #9E9E9E; /* Light grey */
+}
+
+#save {
+  width: 100%;
+  padding: 10px;
+  margin-top: 30px; /* Adds spacing above the button */
+  background-color: #FFAB40; /* Change to accent orange color */
+  color: #FFFFFF; /* White */
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+#save:hover {
+  background-color: #E89A30; /* Darker shade of accent orange */
 }
