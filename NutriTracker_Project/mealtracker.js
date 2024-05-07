@@ -626,8 +626,3 @@ document.getElementById('registered-water').addEventListener('click', function (
 
 
 
-
-document.getElementById('ingredient-registration-form').addEventListener('submit', function (event) {
-event.preventDefault();
-registerIngredient()
-})
