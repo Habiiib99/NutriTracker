@@ -3,37 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Acitivity Tracker</title>
-
+    <title>Activity Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
 </head>
-    <body>
-        <h2>Activity Tracker</h2>
-        
-        <label for="activityType">Vælg type af aktivitet:</label>
-        <select id="activityType">
-            <option value="everyday">Almindelige Hverdagsaktiviteter</option>
-            <option value="sports">Sportsaktiviteter</option>
-            <option value="work">Forskellige Typer Arbejde</option>
-        </select>
-        
-        <br><br>
-        
-        <label for="activityName">Vælg aktivitet:</label>
-        <select id="activityName"></select>
-        
-        <br><br>
-        
-        <label for="minutes">Antal minutter:</label>
-        <input type="number" id="minutes" placeholder="Minutes">
-        
-        <br><br>
-        
-        <button id="save">Registrer aktivitet</button>
-        
+
+<body>
+    <!-- Navigation bar with page links -->
+    <nav class="navbar">
+        <img src="Billede2.png" alt="NutriTracker Logo" class="navbar-logo" />
+        <a href="mealcreator.html">Meal Creator</a>
+        <a href="mealtracker.html">Meal Tracker</a>
+        <a href="Activity.html" class="active">Activity Tracker</a>
+        <a href="nutriReport.html">Nutri Report</a>
+        <a href="profile.html">Profile</a>
+    </nav>
+
+    <div class="activity-container">
+        <h1>Activity Tracker</h1>
+        <form id="activity-form">
+            <label for="activityType">Vælg type af aktivitet:</label>
+            <select id="activityType">
+                <option value="everyday">Almindelige Hverdagsaktiviteter</option>
+                <option value="sports">Sportsaktiviteter</option>
+                <option value="work">Forskellige Typer Arbejde</option>
+            </select>
+            
+            <label for="activityName">Vælg aktivitet:</label>
+            <select id="activityName"></select>
+            
+            <label for="minutes">Antal minutter:</label>
+            <input type="number" id="minutes" placeholder="Minutes">
+            
+            <button id="save">Registrer aktivitet</button>
+        </form>
         <div id="result"></div>
+    </div>
 
     <script src="Activity.js"></script>
-
-
 </body>
 </html>
