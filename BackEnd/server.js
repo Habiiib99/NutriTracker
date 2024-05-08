@@ -73,9 +73,12 @@ const fiberKey = 1240; // SortKey for fiber
 
 // Funktion til at hente foodID til en given søgestreng
 async function fetchFoodID(searchString) {
+  // API forventer første bogstav er stort, sikres derfor her.
   searchString = searchString.charAt(0).toUpperCase() + searchString.slice(1);
+  // URL til at hente foodID'et ud fra vores search-string.
   const url = `https://nutrimonapi.azurewebsites.net/api/FoodItems/BySearch/${searchString}`;
   try {
+    // GET-anmodning til at hente data fra API'et - bruger derfor API-nøglen.
     const response = await fetch(url, {
       method: 'GET',
       headers: {
@@ -85,16 +88,20 @@ async function fetchFoodID(searchString) {
     });
     if (response.ok) {
       const result = await response.json();
+      // Sender det første foodID, hvis GET-anmodningen lykkes. Spørgsmål. Skulle dette ikke være så man kan vælge mellem alle mulighederne?
       return result[0].foodID;
+    // Hvis anmodningen ikke lykkes, logges fejl til konsollen med fejlmeddelelse med response-status.
     } else {
       console.error('Failed to fetch data. Status:', response.status);
       return null;
     }
+    // Hvis der sker en fejl i løbet af anmodningen, logges fejl til konsollen med fejl ved at fetche data.
   } catch (error) {
     console.error('Error fetching data:', error);
     return null;
   }
 }
+
 // Funktion til at hente næringsværdier baseret på foodID og sortKey
 async function fetchNutrientValue(foodID, sortKey) {
   const url = `https://nutrimonapi.azurewebsites.net/api/FoodCompSpecs/ByItem/${foodID}/BySortKey/${sortKey}`;
