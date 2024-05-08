@@ -1,20 +1,25 @@
+// Importerer nødvendige moduler
+// Express for at bygge webapplikationer med Node.
 import express from 'express';
+// Fetch er node.js-modulet til at lave HTTP-anmodninger.
 import fetch from 'node-fetch';
+// Middleware til håndtering af cross-origin resource sharing i Express.
 import cors from 'cors';
+
 
 const app = express();
 const port = 2220;
 const apiKey = '169792';
 app.use(express.json());
 
-// CORS options (så min lokale server godtager den/ dette ændres?)
+// CORS options (så den lokale server godtager den/ dette ændres?)
 const corsOptions = {
   origin: 'http://127.0.0.1:5500',  // Tillad anmodninger fra denne oprindelse
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',  // Tilladte HTTP metoder
   allowedHeaders: 'Content-Type, Authorization',  // Tilladte headers
   credentials: true  // Tillad cookies/session across domains
 };
-// Anvend CORS med de specificerede indstillinger
+// Anvender CORS med de specificerede indstillinger for at håndtere specifikke anmodninger.
 app.use(cors(corsOptions));
 
 app.use((req, res, next) => {
@@ -25,8 +30,9 @@ app.use((req, res, next) => {
 });
 
 
-// importere mysql
+// Importerer mssql-modulet for at kunne kommunikere med SQL server-database
 import sql from 'mssql';
+// Definerer konfigurationen til databasen
 const dbConfig = {
   user: 'Habib',
   password: 'Dhdh2399!',
@@ -37,18 +43,23 @@ const dbConfig = {
     trustServerCertificate: false // nødvendig for lokal udvikling, ikke nødvendig for Azure
   }
 };
+// Opretter asynkron funktion for at tilslutte databasen og gøre det muligt at teste forespørgsler.
+// Dette gøres kontinuerligt i løbet af koden for at sikre forbindelsen til databasen uden at blokere for efterfølgende kode, men kommenteres kun denne ene gang.
+
 async function connectToDb() {
   try {
     // Opretter forbindelse og laver en ny instance af SQL-connection
     const pool = await sql.connect(dbConfig);
     console.log('Forbundet til databasen.');
-    // Her kan du køre en test forespørgsel for at sikre, at forbindelsen virker
+    // Test forespørgsel for at sikre, at forbindelsen virker
     const result = await pool.request().query('SELECT 1 AS number');
     console.log(result);
+    // Opdager fejl ved tilslutning til databasen og logger fejlen til konsollen.
   } catch (err) {
     console.error('Fejl ved forbindelse til databasen:', err);
   }
 }
+// Kalder funktionen connectToDb for at oprette forbindelse til databasen.
 connectToDb();
 
 
