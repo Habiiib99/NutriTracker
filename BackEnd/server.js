@@ -519,15 +519,41 @@ app.post('/api/meal-tracker/track-meal', async (req, res) => {
 });
 
 
+
 // Endpoint til at hente alle registrerede måltider fra tracker-tabellen for en given bruger
 app.get('/api/meal-tracker/intakes/:userId', async (req, res) => {
   const { userId } = req.params;
   try {
     const pool = await sql.connect(dbConfig);
     const query = `
-      SELECT t.trackerId, t.mealId, t.weight, t.consumptionDate, t.location, m.mealName
+      SELECT t.trackerId, t.mealId, t.weight, t.consumptionDate, m.mealName, m.kcal, m.protein, m.fat, m.fiber
       FROM dbo.tracker t
       JOIN dbo.meals m ON t.mealId = m.mealId
+      WHERE t.userId = @userId
+      ORDER BY t.consumptionDate DESC
+    `;
+    const result = await pool.request()
+      .input('userId', sql.Int, userId)
+      .query(query);
+
+    res.json(result.recordset);
+  } catch (error) {
+    console.error('Fejl ved hentning af måltider:', error);
+    res.status(500).json({ message: 'Serverfejl', error: error.message });
+  }
+});
+
+app.get('/api/meal-tracker/intakes-ingredient/:userId', async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const pool = await sql.connect(dbConfig);
+    const query = `
+      SELECT t.trackerId, t.mealIngredientId, t.weight, t.consumptionDate, 
+             mi.ingredientId, mi.weightOfIngredient,
+             i.ingredient, i.kcal, i.protein, i.fat, i.fiber
+      FROM dbo.tracker t
+      JOIN dbo.meal_ingredients mi ON t.mealIngredientId = mi.mealIngredientId
+      JOIN dbo.ingredients i ON mi.ingredientId = i.ingredientId
       WHERE t.userId = @userId
       ORDER BY t.consumptionDate DESC
     `;
@@ -564,13 +590,13 @@ app.delete('/api/meal-tracker/intake/:intakeId', async (req, res) => {
 
 app.put('/api/meal-tracker/intake/:intakeId', async (req, res) => {
   const { intakeId } = req.params;
-  const { consumptionDate } = req.body;
+  const { weight } = req.body;
 
   try {
     const pool = await sql.connect(dbConfig);
-    const query = 'UPDATE tracker SET consumptionDate = @consumptionDate WHERE trackerId = @trackerId';
+    const query = 'UPDATE tracker SET weight = @weight WHERE trackerId = @trackerId';
     const result = await pool.request()
-      .input('consumptionDate', sql.DateTime, consumptionDate)
+      .input('weight', sql.Decimal(10, 2), weight)
       .input('trackerId', sql.Int, intakeId)
       .query(query);
 
