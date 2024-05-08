@@ -2,50 +2,44 @@
 <html lang="da">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nutri Report</title>
-    <!--Linker vores Font fil og CSS-->
+    <title>Daily Nutri</title>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="error-container"></div> <!-- Container for fejlbeskeder -->
-
-    <!-- Navigationsbar indsættes for hver HTML fil-->
-    <!--Nav-elementet repræsenterer en sektion af en side, der linker til andre dele på siden.-->
     <nav class="navbar">
-        <img src="Billede2.png" alt="NutriTracker Logo" class="navbar-logo"> <!--Link til logo-->
-        <a href="dashboard.html">Dashboard</a>
+        <img src="Billede2.png" alt="NutriTracker Logo" class="navbar-logo">
         <a href="mealcreator.html">Meal Creator</a>
         <a href="mealtracker.html">Meal Tracker</a>
-        <a href="nutriReport.html" class="active">Nutri Report</a>
-        <a href="food-inspector.html">Food Inspector</a>
+        <a href="Activity.html">Activity Tracker</a>
+        <a href="dailyNutri.html" class="active">Daily Nutri</a>
         <a href="profile.html">Profile</a>
-     </nav>
+    </nav>
 
-     <div class="nutri-report-container">
-        <h1>Nutri Report</h1> <!--Overskift-->
+    <div class="daily-nutri-container">
+        <h1>Daily Nutri</h1>
+        <label for="view-mode">Visningstilstand:</label>
+        <select id="view-mode">
+            <option value="daily">24 Timer</option>
+            <option value="monthly">Måned</option>
+        </select>
         <table>
             <thead>
-                <tr> <!--Tabel med diverse oplysninnger i rækker-->
-                    <th>Dato</th>
-                    <th>Måltider</th>
-                    <th>Vand</th>
-                    <th>Kcal</th>
-                    <th>Protein</th>
-                    <th>Fat</th>
-                    <th>Fiber</th>
+                <tr>
+                    <th>Dato/Time</th>
+                    <th>Energi (kcal)</th>
+                    <th>Vand (L)</th>
+                    <th>Kalorieforbrænding</th>
+                    <th>Kalorieoverskud/Underskud</th>
                 </tr>
             </thead>
-            <tbody class="report-entries">
-                <!-- Rapportindlæg vil blive genereret og indsat her af JavaScript -->
+            <tbody class="nutri-entries">
+                <!-- Rapportindlæg genereres og indsættes her -->
             </tbody>
         </table>
         <div class="loading-indicator" hidden>Loading...</div>
     </div>
-    
-    <!-- Link til JavaScript-filerne-->
-    <script src="api.js"></script>
-    <script src="nutriReport.js"></script>
+
+    <script src="dailyNutri.js"></script>
 </body>
 </html>
