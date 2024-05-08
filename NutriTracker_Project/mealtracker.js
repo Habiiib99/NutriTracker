@@ -113,6 +113,7 @@ async function updateMealLogDisplay() {
   try {
     const response = await fetch(`http://localhost:2220/api/meal-tracker/intakes/${user.userId}`);
     const mealLog = await response.json();
+    console.log(mealLog)
 
     const mealLogContainer = document.getElementById('registered-meals');
     mealLogContainer.innerHTML = '';
@@ -125,7 +126,10 @@ async function updateMealLogDisplay() {
             <span class="meal-name">${entry.mealName}</span>
             <span class="meal-weight">${entry.weight}g</span>
             <span class="meal-time">${new Date(entry.consumptionDate).toLocaleString()}</span>
-            <span class="meal-location">${entry.location}</span>
+            <span class="meal-name">${entry.kcal*entry.weight/100}</span>
+            <span class="meal-name">${entry.protein*entry.weight/100}</span>
+            <span class="meal-name">${entry.fiber*entry.weight/100}</span>
+            <span class="meal-name">${entry.fat*entry.weight/100}</span>
           </div>
           <div class="meal-actions">
             <button class="edit-meal-btn" data-id="${entry.trackerId}">Rediger</button>
@@ -139,8 +143,57 @@ async function updateMealLogDisplay() {
   }
 }
 
+async function updateIngredientLogDisplay() {
+  const user = JSON.parse(localStorage.getItem('user'));
+  if (!user || !user.userId) {
+    console.error('Bruger ikke fundet.');
+    return;
+  }
+
+  try {
+    const response = await fetch(`http://localhost:2220/api/meal-tracker/intakes-ingredient/${user.userId}`);
+    const mealLog = await response.json();
+    console.log(mealLog)
+
+    const mealLogContainer = document.getElementById('registered-ingredients');
+    mealLogContainer.innerHTML = '';
+
+    mealLog.forEach(entry => {
+      const mealEntryDiv = document.createElement('div');
+      mealEntryDiv.className = 'meal-entry';
+      mealEntryDiv.innerHTML = `
+          <div class="meal-details">
+            <span class="meal-name">${entry.ingredient}</span>
+            <span class="meal-weight">${entry.weight}g</span>
+            <span class="meal-time">${new Date(entry.consumptionDate).toLocaleString()}</span>
+            <span class="meal-name">${entry.kcal*entry.weight/100}</span>
+            <span class="meal-name">${entry.protein*entry.weight/100}</span>
+            <span class="meal-name">${entry.fiber*entry.weight/100}</span>
+            <span class="meal-name">${entry.fat*entry.weight/100}</span>
+          </div>
+          <div class="meal-actions">
+            <button class="edit-meal-btn" data-id="${entry.trackerId}">Rediger</button>
+            <button class="delete-meal-btn" data-id="${entry.trackerId}">Slet</button>
+          </div>
+        `;
+      mealLogContainer.appendChild(mealEntryDiv);
+    });
+  } catch (error) {
+    console.error('Fejl ved hentning af måltider:', error);
+  }
+}
+
+
 // Tilføj event listener til at håndtere redigering og sletning af måltider
 document.getElementById('registered-meals').addEventListener('click', function (event) {
+  const trackerId = event.target.dataset.id;
+  if (event.target.classList.contains('delete-meal-btn') && trackerId) {
+    deleteMeal(trackerId);
+  } else if (event.target.classList.contains('edit-meal-btn') && trackerId) {
+    editMeal(trackerId);
+  }
+});
+document.getElementById('registered-ingredients').addEventListener('click', function (event) {
   const trackerId = event.target.dataset.id;
   if (event.target.classList.contains('delete-meal-btn') && trackerId) {
     deleteMeal(trackerId);
@@ -160,7 +213,8 @@ async function deleteMeal(trackerId) {
     const result = await response.json();
     if (response.ok) {
       alert(result.message);
-      updateMealLogDisplay(); // Opdater måltidslog
+      updateMealLogDisplay(); // Opdater måltider
+      updateIngredientLogDisplay //Opdater ingredienser
     } else {
       console.error('Fejl ved sletning:', result);
     }
@@ -171,20 +225,21 @@ async function deleteMeal(trackerId) {
 
 // Funktion til at redigere et måltid (kun dato/tidspunkt)
 async function editMeal(trackerId) {
-  const newDate = prompt('Indtast nyt tidspunkt (yyyy-mm-dd hh:mm:ss):');
-  if (!newDate) return;
+  const newWeight = prompt('Indtast ny vægt');
+  if (!newWeight) return;
 
   try {
     const response = await fetch(`http://localhost:2220/api/meal-tracker/intake/${trackerId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ consumptionDate: newDate })
+      body: JSON.stringify({ weight: newWeight })
     });
 
     const result = await response.json();
     if (response.ok) {
       alert(result.message);
       updateMealLogDisplay(); // Opdater måltidslog
+      updateIngredientLogDisplay //Opdater ingredienser
     } else {
       console.error('Fejl ved redigering:', result);
     }
@@ -195,6 +250,8 @@ async function editMeal(trackerId) {
 
 // Når dokumentet er indlæst, skal du opdatere måltidsloggen
 document.addEventListener('DOMContentLoaded', updateMealLogDisplay);
+document.addEventListener('DOMContentLoaded', updateIngredientLogDisplay);
+
 
 
 
@@ -202,6 +259,13 @@ document.addEventListener('DOMContentLoaded', updateMealLogDisplay);
 document.addEventListener('DOMContentLoaded', () => {
   populateMealDropdown();
 });
+
+
+
+
+
+
+
 
 
 
@@ -443,7 +507,11 @@ async function registerIngredient() {
     const location = await getLocation();
     
     await trackIngredient(mealIngredientId, weight, location);
+    
+
     alert('Ingrediens tilføjet med succes til begge tabeller');
+    updateIngredientLogDisplay()
+
   } catch (error) {
     console.error('Fejl:', error);
     alert('Der opstod en fejl under registrering af ingrediens');
@@ -456,6 +524,7 @@ document.getElementById('ingredient-registration-form').addEventListener('submit
   event.preventDefault();
   registerIngredient();
 });
+
 
 
 
