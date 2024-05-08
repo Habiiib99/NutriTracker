@@ -574,7 +574,7 @@ async function registerWaterIntake() {
 
           if (response.ok) {
               const result = await response.json();
-              alert(result.message);
+              alert('Vandet er blevet registreret.');
           } else {
               const error = await response.json();
               console.error('Fejl ved registrering:', error);
@@ -602,7 +602,7 @@ async function editWaterIntake(id) {
 
       const result = await response.json();
       if (response.ok) {
-          alert(result.message);
+          alert('Vandet er blevet registreret');
           // Opdater visningen af vandindtag
           updateWaterLogDisplay();
       } else {
@@ -623,7 +623,7 @@ async function deleteWaterIntake(id) {
 
       const result = await response.json();
       if (response.ok) {
-          alert(result.message);
+          alert('Vandet er blevet registreret');
           // Opdater visningen af vandindtag
           updateWaterLogDisplay();
       } else {
@@ -633,7 +633,6 @@ async function deleteWaterIntake(id) {
       console.error('Fejl ved sletning af vandindtag:', error);
   }
 }
-
 
 
 
