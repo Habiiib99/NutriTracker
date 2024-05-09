@@ -331,11 +331,11 @@ app.delete('/delete/:userId', async (req, res) => {
 
   const pool = await sql.connect(dbConfig)
 
+  // Hører det her ikke til et andet sted?
   pool.request().input('userId', sql.Int, userId)
     .query('DELETE FROM meals WHERE userId = @userId').then(() => {
 
-      pool
-        .request()
+      pool.request()
         .input('userId', sql.Int, userId)
         .query('DELETE FROM profiles WHERE userId = @userId').then((result) => {
           return res.status(201).json({ message: 'Bruger slettet' })
