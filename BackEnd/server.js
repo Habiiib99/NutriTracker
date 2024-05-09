@@ -169,7 +169,7 @@ app.get('/nutrient-value/:foodID/:sortKey', async (req, res) => {
 
 // **BRUGERSTYRING**
 
-// Funktion til bmr
+// Funktion til bmr baseret på vægt, alder og køn
 function calculateBMR(weight, age, gender) {
   let bmr = 0;  // Basalstofskifte i MJ/dag
 
@@ -218,23 +218,28 @@ import bcrypt from 'bcrypt';
 // Husk at bruge middleware for at parse JSON body
 app.use(express.json());
 
-
+// Endpoint til at oprette en ny profil
 app.post('/register', async (req, res) => {
   const { name, password, age, weight, gender, email } = req.body;
   console.log(req.body);
 
   try {
     const pool = await sql.connect(dbConfig);
+  // Tjekker om der allerede eksisterer en bruger med den indtastede mail.
     const user = await pool.request()
       .input('email', sql.VarChar, email)
       .query('SELECT userId FROM profiles WHERE email = @email');
-
+  // Hvis der allerede eksisterer en brug med den mail, returneres fejlmeddelelse om dette.
+  // Dette gøres ved, at SELECT-querien først vælger 'userId'et' fra den profil, hvor mail-adressen matcher den indtastede mail.
+  // Herefter gemmes resultatet så (pga. input) i 'user', og hvis recordset.length ikke er lig med 0,
+  // betyder det, at der allerede eksisterer en mail, fordi 'user.recordset' er de returnerede rækker fra databasen.
     if (user.recordset.length !== 0) {
       console.log(user.recordset.length);
       return res.status(400).json({ message: 'En bruger med den email eksisterer allerede' });
     }
 
-    // Siden userId er en IDENTITY kolonne, behøver du ikke at sætte den her.
+    // Indsætter den nye profil med de indtastede oplysninger i databasen.
+    // userId er en IDENTITY kolonne og indsættes derfor ikke her.
     const result = await pool.request()
       .input('name', sql.VarChar, name)
       .input('age', sql.Int, age)
@@ -245,9 +250,10 @@ app.post('/register', async (req, res) => {
       .input('bmr', sql.Decimal(5, 4), calculateBMR(weight, age, gender))
       .query('INSERT INTO profiles (name, age, gender, weight, email, password, bmr) OUTPUT INSERTED.userId VALUES (@name, @age, @gender, @weight, @email, @password, @bmr)');
 
-    // Bruger OUTPUT INSERTED.userId for at få den genererede ID
+    // Bruger OUTPUT INSERTED.userId for at få den genererede ID og sender meddelelse om brugeroprettelsen.
     res.status(201).json({ message: 'Bruger oprettet', id: result.recordset[0].userId });
 
+    // Fanger evt. fejl under oprettelsen og sender fejlmeddelelse om dette.
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Serverfejl ved forsøg på registrering', error: error.message });
