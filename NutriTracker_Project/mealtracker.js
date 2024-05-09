@@ -101,8 +101,6 @@ document.getElementById('meal-registration-form').addEventListener('submit', fun
   registerMeal();
 });
 
-
-// Funktion til at hente og vise gemte måltider
 async function updateMealLogDisplay() {
   const user = JSON.parse(localStorage.getItem('user'));
   if (!user || !user.userId) {
@@ -126,10 +124,10 @@ async function updateMealLogDisplay() {
             <span class="meal-name">${entry.mealName}</span>
             <span class="meal-weight">${entry.weight}g</span>
             <span class="meal-time">${new Date(entry.consumptionDate).toLocaleString()}</span>
-            <span class="meal-name">${entry.kcal*entry.weight/100}</span>
-            <span class="meal-name">${entry.protein*entry.weight/100}</span>
-            <span class="meal-name">${entry.fiber*entry.weight/100}</span>
-            <span class="meal-name">${entry.fat*entry.weight/100}</span>
+            <span class="meal-name">Kcal ${entry.kcal*entry.weight/100}</span>
+            <span class="meal-name">Protein ${entry.protein*entry.weight/100}</span>
+            <span class="meal-name">Fiber ${entry.fiber*entry.weight/100}</span>
+            <span class="meal-name">Fat ${entry.fat*entry.weight/100}</span>
           </div>
           <div class="meal-actions">
             <button class="edit-meal-btn" data-id="${entry.trackerId}">Rediger</button>
@@ -166,10 +164,10 @@ async function updateIngredientLogDisplay() {
             <span class="meal-name">${entry.ingredient}</span>
             <span class="meal-weight">${entry.weight}g</span>
             <span class="meal-time">${new Date(entry.consumptionDate).toLocaleString()}</span>
-            <span class="meal-name">${entry.kcal*entry.weight/100}</span>
-            <span class="meal-name">${entry.protein*entry.weight/100}</span>
-            <span class="meal-name">${entry.fiber*entry.weight/100}</span>
-            <span class="meal-name">${entry.fat*entry.weight/100}</span>
+            <span class="meal-name">Kcal ${entry.kcal*entry.weight/100}</span>
+            <span class="meal-name">Protein ${entry.protein*entry.weight/100}</span>
+            <span class="meal-name">Fiber ${entry.fiber*entry.weight/100}</span>
+            <span class="meal-name">Fat ${entry.fat*entry.weight/100}</span>
           </div>
           <div class="meal-actions">
             <button class="edit-meal-btn" data-id="${entry.trackerId}">Rediger</button>
@@ -182,7 +180,6 @@ async function updateIngredientLogDisplay() {
     console.error('Fejl ved hentning af måltider:', error);
   }
 }
-
 
 // Tilføj event listener til at håndtere redigering og sletning af måltider
 document.getElementById('registered-meals').addEventListener('click', function (event) {
