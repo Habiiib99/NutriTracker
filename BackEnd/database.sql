@@ -1,12 +1,14 @@
--- Dropping existing tables if they exist
+-- Nødvendigt at skrive de to her med at slette tabeller og lave en db, hvis den ikke allerede eksisterer?
+-- Sletter tabeller med de anvendte navne, hvis de allerede eksisterer
 DROP TABLE IF EXISTS dbo.meals;
 DROP TABLE IF EXISTS dbo.profiles;
 DROP TABLE IF EXISTS dbo.tracker;
 DROP TABLE IF EXISTS dbo.activities;
 DROP TABLE IF EXISTS dbo.ingredients;
+DROP TABLE IF EXISTS dbo.meal_ingredients;
+DROP TABLE IF EXISTS dbo.waterRegistration;
 
-
--- Create the database if it doesn't already exist
+-- Opretter databasen, hvis den ikke allerede eksisterer
 IF NOT EXISTS(SELECT * FROM sys.databases WHERE name = 'NutriTracker')
 BEGIN
   CREATE DATABASE NutriTracker;
